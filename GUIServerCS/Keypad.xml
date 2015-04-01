@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TestMenu>
+  <Category>Driver</Category>
+  <Module>Keypad</Module>
+  <TestCase tc="TC_0001">
+    <SeqNum sn="0001">
+      <FuncID>0001</FuncID>
+      <Param>0000</Param>
+      <Expect>The Keypad BackLight will be turn OFF for 500ms then turn ON. (blink 1 time)</Expect>
+      <Desc>Keypad backlight turn off and on</Desc>
+    </SeqNum>
+  </TestCase>
+  <TestCase tc="TC_0002">
+    <SeqNum sn="0001">
+      <FuncID>0002</FuncID>
+      <Param>0000</Param>
+      <Expect>Return KEYP_KEY_NULL</Expect>
+      <Desc>Get the last key pressed (NULL)</Desc>
+    </SeqNum>
+  </TestCase>
+</TestMenu>
