@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TestMenu>
+  <Category>Driver</Category>
+  <Module>Display</Module>
+  <TestCase tc="TC_0001">
+    <SeqNum sn="0001">
+      <FuncID>0001</FuncID>
+      <Param>0000</Param>
+      <Expect>The FontID has been set to DISP_FONT_ID_ENGLISH</Expect>
+      <Desc>Select ENGLISH font to display on LCD</Desc>
+    </SeqNum>
+  </TestCase>
+  <TestCase tc="TC_0002">
+    <SeqNum sn="0001">
+      <FuncID>0002</FuncID>
+      <Param>0000</Param>
+      <Expect>The FontID has been set to DISP_FONT_ID_CHINESE</Expect>
+      <Desc>Select CHINESE font to display on LCD</Desc>
+    </SeqNum>
+  </TestCase>
+</TestMenu>
