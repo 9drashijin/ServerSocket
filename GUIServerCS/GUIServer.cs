@@ -292,10 +292,6 @@ namespace GUIServerCS
                 if (content.Contains("FAIL"))
                 {
                     receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
-                    stopSendFlag = true;
-                    UncheckAll(TestMenuTree.Nodes);
-                    CheckTicked(TestMenuTree.Nodes);
-                    DialogResult result = MessageBox.Show(failedTest, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else if (expectedResult == "")
                 {
@@ -324,7 +320,6 @@ namespace GUIServerCS
                     }
                     content.Trim();
                     receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
-
                     if (content.Contains("PASS")) tempPass++;
                 }
                 else if (content.Contains("PASS"))
@@ -584,12 +579,12 @@ namespace GUIServerCS
             String inputData = String.Empty;
             int i = 0;
 
-            DescBox.Clear();
-            ExpectBox.Clear();
+            //DescBox.Clear();
+            //ExpectBox.Clear();
             for (i = 0; i < Mod[parentIndex].tc[childIndex].seq.Count; i++) 
             {
-                DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
-                ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
+                //DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
+                //ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
                 if(stopSendFlag == true) break;
                 expectedResult = String.Empty;
                 inputData = Mod[parentIndex].tc[childIndex].seq[i].FuncID + Mod[parentIndex].tc[childIndex].seq[i].Param;
