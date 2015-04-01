@@ -127,6 +127,7 @@
     <Content Include="Display.xml" />
     <Content Include="Hardware Layer.xml" />
     <Content Include="Keypad.xml" />
+    <Content Include="MagStr Reader.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
