@@ -288,8 +288,16 @@ namespace GUIServerCS
                 currentTest.Text = "Current Test : " + (counter).ToString();
                 state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                 content = state.str.ToString();
-               
-                if (expectedResult == "")
+
+                if (content.Contains("FAIL"))
+                {
+                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+                    stopSendFlag = true;
+                    UncheckAll(TestMenuTree.Nodes);
+                    CheckTicked(TestMenuTree.Nodes);
+                    DialogResult result = MessageBox.Show(failedTest, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else if (expectedResult == "")
                 {
                     tempPass++;
                 }
@@ -317,6 +325,17 @@ namespace GUIServerCS
                     content.Trim();
                     receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
 
+                    if (content.Contains("PASS")) tempPass++;
+                }
+                else if (content.Contains("PASS"))
+                {
+                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+                    if (content.Contains("PASS")) tempPass++;
+                }
+                else if (expectedResult == "PRINT") 
+                {
+                    content += " PASS";
+                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
                     if (content.Contains("PASS")) tempPass++;
                 }
                 else if (content.Trim() != expectedResult)
@@ -694,14 +713,12 @@ namespace GUIServerCS
         {
             backgroundWorker1.CancelAsync();
             backgroundWorker2.CancelAsync();
-            backgroundWorker1.Dispose();
             Application.Exit();
         }
         public void ServerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             backgroundWorker1.CancelAsync();
             backgroundWorker2.CancelAsync();
-            backgroundWorker1.Dispose();
             Application.Exit();
         }
     }
