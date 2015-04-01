@@ -11,7 +11,7 @@ using System.Net;
 using System.IO;
 using System.Net.Sockets;
 using System.Xml;
-
+ 
 namespace GUIServerCS
 {
     public partial class ServerForm : Form
