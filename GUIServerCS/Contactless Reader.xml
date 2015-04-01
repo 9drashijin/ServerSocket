@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--Function Name
+      0001 : CLR_Open()
+      0002 : CLR_Close()
+      0003 : CLR_GetReaderID()
+      0004 : CLR_SetLED()
+      0005 : CLR_MiFareActivateIdle()
+      0006 : CLR_MiFareAuthCard()
+      ===============================
+-->
+<TestMenu>
+  <Category>Driver</Category>
+  <Module>Contactless Reader</Module>
+  <TestCase tc="TC_0001">
+    <SeqNum sn="0001">
+      <FuncID>0001</FuncID>
+      <Param>0000</Param>
+      <Expect></Expect>
+      <Desc>Initialize contactless reader module</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0002">
+    <SeqNum sn="0001">
+      <FuncID>0004</FuncID>
+      <Param>000281</Param>
+      <Expect></Expect>
+      <Desc>Terminal produces 1 short beep</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>0003200</Param>
+      <Expect></Expect>
+      <Desc>Delay for 200ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0004</FuncID>
+      <Param>000280</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Terminal produces 1 short beep</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0003">
+    <SeqNum sn="0001">
+      <FuncID>0004</FuncID>
+      <Param>000241</Param>
+      <Expect></Expect>
+      <Desc>Turn on Green LED</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>100</Param>
+      <Expect></Expect>
+      <Desc>Delay for 500ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0004</FuncID>
+      <Param>000240</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Turn off Green LED</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0004">
+    <SeqNum sn="0001">
+      <FuncID>0004</FuncID>
+      <Param>000221</Param>
+      <Expect></Expect>
+      <Desc>Turn on Orange LED</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>100</Param>
+      <Expect></Expect>
+      <Desc>Delay for 500ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0004</FuncID>
+      <Param>000220</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Turn off Orange LED</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0005">
+    <SeqNum sn="0001">
+      <FuncID>0004</FuncID>
+      <Param>000211</Param>
+      <Expect></Expect>
+      <Desc>Turn on Red LED</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>100</Param>
+      <Expect></Expect>
+      <Desc>Delay for 500ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0004</FuncID>
+      <Param>000210</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Turn off Red LED</Desc>
+    </SeqNum>
+    
+  </TestCase>
+</TestMenu>
