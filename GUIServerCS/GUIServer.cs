@@ -63,7 +63,7 @@ namespace GUIServerCS
             // Init GUI
             InitializeComponent();
 
-            //InitTreeView();
+            //Init Tree View 
             buildTreeView();
 
             // Background Server
@@ -151,63 +151,7 @@ namespace GUIServerCS
             }
             TestMenuTree.EndUpdate();
         }
-        public void InitTreeView()
-        {
-            // Check XML File path
-            //string path = Directory.GetCurrentDirectory();
-            //string testPath = path + "\\test.xml";
-            //if (!File.Exists(testPath))
-            //{
-            //    MessageBox.Show("File Not Found");
-            //}
-            //XmlDocument xDoc = new XmlDocument();
-            //xDoc.Load(testPath);
 
-            //TestCase[] TC = new TestCase[128];
-            //int i = 0, j = 0;
-            //int catIndex = 0, modIndex = 0;
-            //int tcNum = 1, catNum = 1, modNum = 1;
-            //// Build Tree
-            //TestMenuTree.BeginUpdate();
-            //TestMenuTree.Nodes.Add("TestMenu");
-            //foreach (XmlNode xNode in xDoc.SelectNodes("TestMenu"))
-            //{
-            //    foreach (XmlNode xNode1 in xNode.SelectNodes("Category"))
-            //    {
-            //        TestMenuTree.Nodes[0].Nodes.Add(xNode.SelectSingleNode("//Category[" + catNum + "]").Attributes["cat"].Value);
-            //        foreach (XmlNode xNode2 in xNode1.SelectNodes("Module"))
-            //        {
-            //            TestMenuTree.Nodes[0].Nodes[catIndex].Nodes.Add(xNode1.SelectSingleNode("//Module[" + modNum + "]").Attributes["module"].Value);
-            //            Mod[j] = new Module();
-            //            foreach (XmlNode xNode3 in xNode2.SelectNodes("TestCase"))
-            //            {
-            //                TestMenuTree.Nodes[0].Nodes[catIndex].Nodes[modIndex].Nodes.Add(xNode2.SelectSingleNode("//TestCase[" + tcNum + "]").Attributes["tc"].Value);
-            //                TC[i] = new TestCase();
-            //                TC[i].Category = xNode.SelectSingleNode("//Category[" + catNum + "]").Attributes["cat"].Value;
-            //                TC[i].Module = xNode1.SelectSingleNode("//Module[" + modNum + "]").Attributes["module"].Value;
-            //                TC[i].TestCases = xNode2.SelectSingleNode("//TestCase[" + tcNum + "]").Attributes["tc"].Value;
-            //                TC[i].Input = xNode3.SelectSingleNode("Input").InnerText;
-            //                TC[i].Expect = xNode3.SelectSingleNode("Expect").InnerText;
-            //                TC[i].Description = xNode3.SelectSingleNode("Desc").InnerText;
-            //                Mod[j].tc[i] = TC[i];
-            //                i++;
-            //                tcNum++;
-            //            }
-            //            tcNum = 1;
-            //            i = 0;
-            //            j++;
-            //            modNum++;
-            //            modIndex++;
-            //        }
-            //        modNum = 1;
-            //        j = 0;
-            //        catNum++;
-            //        catIndex++;
-            //    }
-            //    catNum = 1;
-            //}
-            //TestMenuTree.EndUpdate();
-        }
         public void DisplayServerInfo()
         {
             IPAddress IpAddressv6 = Dns.GetHostAddresses(Dns.GetHostName())[0];
