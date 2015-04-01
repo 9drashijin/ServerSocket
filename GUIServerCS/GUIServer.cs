@@ -1,0 +1,708 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+using System.Net;
+using System.IO;
+using System.Net.Sockets;
+using System.Xml;
+
+namespace GUIServerCS
+{
+    public partial class ServerForm : Form
+    {
+        public class StateObject 
+        {
+            public Socket workSocket = null;
+            public byte[] buffer = new byte[1024];
+            public StringBuilder str = new StringBuilder();
+        }
+        public class Sequence
+        {
+            public String FuncID;
+            public String Param;
+            public String Input;
+            public String Expect;
+            public String Description;
+        }
+        public class TestCase
+        {
+            public List<Sequence> seq = new List<Sequence>(); 
+            public String Module;
+            public String Category;
+            public String TestCases;
+        }
+        public class Module
+        {
+            public TestCase[] tc = new TestCase[128];
+        }
+        
+        Socket serverSocket;
+        Socket ClientHandler;
+        IPEndPoint clientIP;
+        StateObject state = new StateObject();
+        public static ManualResetEvent ConnectionDone = new ManualResetEvent(false);
+        System.Threading.ManualResetEvent workerBusy = new System.Threading.ManualResetEvent(false);
+        String childParentTxt = String.Empty;
+        String expectedResult = String.Empty;
+        String failedTest = String.Empty;
+        String currentTestCases = String.Empty , currentTestCasePadded = String.Empty;
+        Module[] Mod = new Module[11];
+        String content = String.Empty;
+        bool SendButtonCheck = false, stopSendFlag = false;
+        int counter = 0, tempCounter = 0, GparentIndex, GchildIndex, tempTested = 0, passTest = 0, tempPass = 0;
+        int pBarMax = 0;
+
+        public ServerForm()
+        {
+            // Init GUI
+            InitializeComponent();
+
+            //InitTreeView();
+            buildTreeView();
+
+            // Background Server
+            backgroundWorker1.RunWorkerAsync();
+            
+        }
+        public void buildTreeView()
+        {
+            TestCase[] TC = new TestCase[128];
+            Sequence[] Seq = new Sequence[128];
+            int i = 0, j = 0, k = 0, l = 0, tcIndex = 1;
+            int tempI = 0, tempJ = 0, tempK = 0, tempL = 0;
+            var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml");
+            TestMenuTree.BeginUpdate();
+            foreach (string file in files)
+            {
+                if (!File.Exists(file))
+                {
+                    MessageBox.Show("File Not Found");
+                }
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.Load(file);
+
+
+                if (!TestMenuTree.Nodes.ContainsKey("TestMenu"))
+                {
+                    TestMenuTree.Nodes.Add(new TreeNode("TestMenu") { Name = "TestMenu" });
+                }
+
+                foreach (XmlNode xNode in xmlDoc.SelectNodes("TestMenu"))
+                {
+                    Mod[j] = new Module();
+                    if (!TestMenuTree.Nodes[0].Nodes.ContainsKey(xNode.SelectSingleNode("Category").InnerText))
+                    {
+                        TestMenuTree.Nodes[0].Nodes.Add(new TreeNode(xNode.SelectSingleNode("Category").InnerText) { Name = xNode.SelectSingleNode("Category").InnerText });
+                    }
+                    if (!TestMenuTree.Nodes[0].Nodes[0].Nodes.ContainsKey(xNode.SelectSingleNode("Module").InnerText))
+                    {
+                        TestMenuTree.Nodes[0].Nodes[0].Nodes.Add(new TreeNode(xNode.SelectSingleNode("Module").InnerText) { Name = xNode.SelectSingleNode("Module").InnerText });
+                    }
+                    else
+                    {
+                        i = tempI;
+                        j = tempJ;
+                        k = tempK;
+                        l = tempL;
+                    }
+
+                    XmlNodeList testCaseList = xmlDoc.GetElementsByTagName("TestCase");
+                    foreach (XmlNode tcNode in testCaseList)
+                    {
+                        TestMenuTree.Nodes[0].Nodes[0].Nodes[i].Nodes.Add(new TreeNode(tcNode.Attributes["tc"].InnerText));
+                    }
+                    
+                    foreach (XmlNode xNode1 in xNode.SelectNodes("TestCase"))
+                    {
+                        Mod[j].tc[k] = new TestCase();
+                        Mod[j].tc[k].Category = xNode.SelectSingleNode("Category").InnerText;
+                        Mod[j].tc[k].Module = xNode.SelectSingleNode("Module").InnerText;
+                        Mod[j].tc[k].TestCases = xNode1.SelectSingleNode("//TestCase[" + tcIndex + "]").Attributes["tc"].Value;
+                        foreach (XmlNode xNode2 in xNode1.SelectNodes("SeqNum"))
+                        {
+                            
+                            Seq[l] = new Sequence();
+                            Seq[l].FuncID = xNode2.SelectSingleNode("FuncID").InnerText;
+                            Seq[l].Param = xNode2.SelectSingleNode("Param").InnerText;
+                            Seq[l].Expect = xNode2.SelectSingleNode("Expect").InnerText;
+                            Seq[l].Description = xNode2.SelectSingleNode("Desc").InnerText;
+                            Mod[j].tc[k].seq.Add(Seq[l]);
+                            l++;
+                        }
+                        k++;
+                        tcIndex++;
+                        tempL = l;
+                        l = 0;
+                    }
+                    tempK = k;
+                    k = 0;
+                    tcIndex = 1;
+                }
+                tempJ = j;
+                tempI = i;
+                j++;
+                i++;
+            }
+            TestMenuTree.EndUpdate();
+        }
+        public void InitTreeView()
+        {
+            // Check XML File path
+            //string path = Directory.GetCurrentDirectory();
+            //string testPath = path + "\\test.xml";
+            //if (!File.Exists(testPath))
+            //{
+            //    MessageBox.Show("File Not Found");
+            //}
+            //XmlDocument xDoc = new XmlDocument();
+            //xDoc.Load(testPath);
+
+            //TestCase[] TC = new TestCase[128];
+            //int i = 0, j = 0;
+            //int catIndex = 0, modIndex = 0;
+            //int tcNum = 1, catNum = 1, modNum = 1;
+            //// Build Tree
+            //TestMenuTree.BeginUpdate();
+            //TestMenuTree.Nodes.Add("TestMenu");
+            //foreach (XmlNode xNode in xDoc.SelectNodes("TestMenu"))
+            //{
+            //    foreach (XmlNode xNode1 in xNode.SelectNodes("Category"))
+            //    {
+            //        TestMenuTree.Nodes[0].Nodes.Add(xNode.SelectSingleNode("//Category[" + catNum + "]").Attributes["cat"].Value);
+            //        foreach (XmlNode xNode2 in xNode1.SelectNodes("Module"))
+            //        {
+            //            TestMenuTree.Nodes[0].Nodes[catIndex].Nodes.Add(xNode1.SelectSingleNode("//Module[" + modNum + "]").Attributes["module"].Value);
+            //            Mod[j] = new Module();
+            //            foreach (XmlNode xNode3 in xNode2.SelectNodes("TestCase"))
+            //            {
+            //                TestMenuTree.Nodes[0].Nodes[catIndex].Nodes[modIndex].Nodes.Add(xNode2.SelectSingleNode("//TestCase[" + tcNum + "]").Attributes["tc"].Value);
+            //                TC[i] = new TestCase();
+            //                TC[i].Category = xNode.SelectSingleNode("//Category[" + catNum + "]").Attributes["cat"].Value;
+            //                TC[i].Module = xNode1.SelectSingleNode("//Module[" + modNum + "]").Attributes["module"].Value;
+            //                TC[i].TestCases = xNode2.SelectSingleNode("//TestCase[" + tcNum + "]").Attributes["tc"].Value;
+            //                TC[i].Input = xNode3.SelectSingleNode("Input").InnerText;
+            //                TC[i].Expect = xNode3.SelectSingleNode("Expect").InnerText;
+            //                TC[i].Description = xNode3.SelectSingleNode("Desc").InnerText;
+            //                Mod[j].tc[i] = TC[i];
+            //                i++;
+            //                tcNum++;
+            //            }
+            //            tcNum = 1;
+            //            i = 0;
+            //            j++;
+            //            modNum++;
+            //            modIndex++;
+            //        }
+            //        modNum = 1;
+            //        j = 0;
+            //        catNum++;
+            //        catIndex++;
+            //    }
+            //    catNum = 1;
+            //}
+            //TestMenuTree.EndUpdate();
+        }
+        public void DisplayServerInfo()
+        {
+            IPAddress IpAddressv6 = Dns.GetHostAddresses(Dns.GetHostName())[0];
+            IPAddress IpAddressv4 = Dns.GetHostAddresses(Dns.GetHostName())[1];
+            Thread.Sleep(100);
+            ServerInfo.AppendText("Host Name    : " + Dns.GetHostName() + "\r\n");
+            ServerInfo.AppendText("IPv4 Address : " + IpAddressv4.ToString() + "\r\n");
+            ServerInfo.AppendText("IPv6 Address : " + IpAddressv6.ToString() + "\r\n");
+            ServerInfo.AppendText("Server Port  : 8888 \r\n");
+        }
+        public void DisplayClientInfo()
+        {
+            clientIP = (IPEndPoint)ClientHandler.RemoteEndPoint;
+            ClientInfo.AppendText("IPv4 Address : " + clientIP.Address + "\r\n");
+            ClientInfo.AppendText("Client Port  : " + clientIP.Port + "\r\n");
+        }
+        public void ServerListen()
+        {
+            IPEndPoint localIP = new IPEndPoint(IPAddress.Any, 8888);
+            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            try
+            {
+                serverSocket.Bind(localIP);
+                serverSocket.Listen(10);
+                receiveDisplay.AppendText("Waiting for connecntion...\r\n");
+
+                ConnectionDone.Reset();
+
+                serverSocket.BeginAccept(new AsyncCallback(AcceptCallBack), serverSocket);
+                ConnectionDone.WaitOne();
+
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+        }
+        public void AcceptCallBack(IAsyncResult asyn)
+        {
+            ConnectionDone.Set();
+            Socket ClientListener = (Socket)asyn.AsyncState;
+            ClientHandler = ClientListener.EndAccept(asyn);
+
+            receiveDisplay.AppendText("A Client has joined the server.\r\n");
+            state.workSocket = ClientHandler;
+        }
+        public void Read(StateObject state)
+        {
+            ClientHandler.BeginReceive(state.buffer, 0, 1024, 0, new AsyncCallback(ReadCallBack), state);
+        }
+        public void ReadCallBack(IAsyncResult asyn)
+        {
+            StateObject state = (StateObject)asyn.AsyncState;
+            Socket handler = state.workSocket;
+
+            int bytesRead = handler.EndReceive(asyn);
+            if (bytesRead > 0)
+            {
+                toolStripProgressBar1.Maximum = pBarMax;
+                toolStripProgressBar1.Increment(1);
+
+                int percent = (int)(((double)toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum) * 100);
+                percentageDisplay.Text = percent.ToString() + "%";
+
+                int value = toolStripProgressBar1.Value;
+                if (value == toolStripProgressBar1.Maximum)//To correctly update progress bar
+                {
+                    toolStripProgressBar1.Maximum = value + 1;
+                    toolStripProgressBar1.Value = value + 1;
+                    toolStripProgressBar1.Maximum = value;
+                }
+                else
+                {
+                    toolStripProgressBar1.Value = value + 1;
+                }
+                toolStripProgressBar1.Value = value;
+
+                currentTest.Text = "Current Test : " + (counter).ToString();
+                state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
+                content = state.str.ToString();
+               
+                if (expectedResult == "")
+                {
+                    tempPass++;
+                }
+                else if (expectedResult == "PROMPT_USER_INPUT")
+                {
+                    workerBusy.Reset();
+                    content = String.Empty;
+                    DialogResult result = MessageBox.Show(currentTestCases + Environment.NewLine +
+                        "Please confirm if the test pass.", "User Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                    if (result == DialogResult.Yes)
+                    {
+                        content += "PASS";
+                    }
+                    else if (result == DialogResult.No)
+                    {
+                        content += "FAIL";
+                    }
+                    else
+                    {
+                        content += "ABORTED";
+                        stopSendFlag = true;
+                        UncheckAll(TestMenuTree.Nodes);
+                        CheckTicked(TestMenuTree.Nodes);
+                    }
+                    content.Trim();
+                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+
+                    if (content.Contains("PASS")) tempPass++;
+                }
+                else if (content.Trim() != expectedResult)
+                {
+                    stopSendFlag = true;
+                    UncheckAll(TestMenuTree.Nodes);
+                    CheckTicked(TestMenuTree.Nodes);
+                    DialogResult result = MessageBox.Show(failedTest, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    content += " PASS";
+                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+                    if (content.Contains("PASS")) tempPass++;
+                }
+                tempTested++;
+                workerBusy.Set();
+                expectedResult = String.Empty;
+                content = String.Empty;
+                content = "";
+                state.str.Clear();
+            }
+        }
+        public void Send(Socket handler, String data)
+        {
+            byte[] byteData = Encoding.ASCII.GetBytes(data);
+            handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallBack), handler);
+        }
+        public void SendCallBack(IAsyncResult asyn)
+        {
+            //
+        }
+        public void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            DisplayServerInfo();
+            ServerListen();
+            backgroundWorker2.RunWorkerAsync();
+            DisplayClientInfo();
+
+            while (worker.CancellationPending != true)
+            {
+                counter = 0;
+                tempCounter = 0;
+                pBarMax = 0;
+                Thread.Sleep(100);
+
+                if (SendButtonCheck == true)
+                {
+                    toolStripProgressBar1.Value = 0;
+                    CheckTotalTick(TestMenuTree.Nodes);
+                    totalTest.Text = "Total Test : " + tempCounter.ToString();
+                    CheckTicked(TestMenuTree.Nodes);
+                    try
+                    {
+                        receiveDisplay.AppendText("\r\n-------------------------\r\nOVERALL UNIT TEST SUMMARY\r\n-------------------------\r\nTESTED : "
+                            + tempCounter + "\r\nPASSED : " + passTest + "\r\nFAILED : " + (tempCounter - passTest) + "\r\n-------------------------\r\n\r\n");
+                    }
+                    catch (Exception err) { err.ToString(); break; }
+                }
+                tempPass = 0;
+                tempTested = 0;
+                passTest = 0;
+                SendButtonCheck = false;
+                if (((state.workSocket.Poll(1, SelectMode.SelectRead) && (state.workSocket.Available == 0)) || !state.workSocket.Connected))
+                {
+                    state.workSocket.Close();
+                    break;
+                }
+            }
+            receiveDisplay.AppendText(clientIP.Address + ":" + clientIP.Port + " has disconnected from the server!\r\n");
+        }
+        public void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            while ((worker.CancellationPending != true))
+            {
+                Read(state);
+                Thread.Sleep(100);
+                if (((state.workSocket.Poll(1, SelectMode.SelectRead) && (state.workSocket.Available == 0)) || !state.workSocket.Connected))
+                {
+                    state.workSocket.Close();
+                    break;
+                }
+            }
+        }
+        public void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            reConnect();
+        }
+        public void reConnect()
+        {
+            state.workSocket.Close();
+            ClientHandler.Close();
+            serverSocket.Close();
+            ServerInfo.Clear();
+            ClientInfo.Clear();
+            backgroundWorker1.CancelAsync();
+            backgroundWorker2.CancelAsync();
+            backgroundWorker1.RunWorkerAsync();
+        }
+        private void TestMenuTree_NodeMouseHover(object sender, TreeNodeMouseHoverEventArgs e)
+        {
+            DescBox.Clear();
+            ExpectBox.Clear();
+            
+            TreeNode selNode = (TreeNode)TestMenuTree.GetNodeAt(TestMenuTree.PointToClient(Cursor.Position));
+            if (selNode.Level == 0 || selNode.Level == 1 || selNode.Level == 2) { ; }
+            else if (selNode != null)
+            {
+                int i = 0;
+                for (i = 0; i < Mod[selNode.Parent.Index].tc[selNode.Index].seq.Count; i++)
+                {
+                    DescBox.AppendText(Mod[selNode.Parent.Index].tc[selNode.Index].seq[i].Description + Environment.NewLine);
+                    ExpectBox.AppendText(Mod[selNode.Parent.Index].tc[selNode.Index].seq[i].Expect + Environment.NewLine);
+                }
+            }
+        }
+        private void TestMenuTree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            DescBox.Clear();
+            ExpectBox.Clear();
+            CheckSelect(TestMenuTree.Nodes);
+        }
+        public void TestMenuTree_CheckedChanged(object sender, TreeViewEventArgs e)
+        {
+            TestMenuTree.BeginUpdate();
+
+            TreeNode node = e.Node;
+            foreach (TreeNode childNode in e.Node.Nodes)
+            {
+                childNode.Checked = e.Node.Checked;
+            }
+            TestMenuTree.SelectedNode = node;
+
+            TestMenuTree.EndUpdate();
+        }
+        public void UncheckAll(TreeNodeCollection theNodes)
+        {
+            if (theNodes != null)
+            {
+                foreach (TreeNode child in theNodes)
+                {
+                    if (child.Checked)
+                    {
+                        child.Checked = false;
+                    }
+                    else
+                    {
+                        UncheckAll(child.Nodes);
+                    }
+                }
+            }
+        }
+        public void CheckTicked(TreeNodeCollection theNodes)
+        {
+            if (theNodes != null)
+            {
+                foreach (TreeNode child in theNodes)
+                {
+                    if (child.Checked)
+                    {
+                        if (child.LastNode != null)
+                        {
+                            CheckTicked(child.Nodes);
+                        }
+                        else
+                        {
+                            try
+                            {
+                                GparentIndex = child.Parent.Index;
+                                GchildIndex = child.Index;
+                                checkIndex(child.Index, child.Parent.Index);
+                            }
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("Test Cases not found!\r\n" + e);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CheckTicked(child.Nodes);
+                    }
+                }
+            }
+        }
+        public void CheckSelect(TreeNodeCollection theNodes)
+        {
+            if (theNodes != null)
+            {
+                foreach (TreeNode child in theNodes)
+                {
+                    if (child.IsSelected)
+                    {
+                        if (child.LastNode != null)
+                        {
+                            CheckSelect(child.Nodes);
+                        }
+                        else
+                        {
+                            int i = 0;
+                            for (i = 0; i < Mod[child.Parent.Index].tc[child.Index].seq.Count; i++) {
+                                DescBox.AppendText(Mod[child.Parent.Index].tc[child.Index].seq[i].Description + Environment.NewLine);
+                                ExpectBox.AppendText(Mod[child.Parent.Index].tc[child.Index].seq[i].Expect + Environment.NewLine);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CheckSelect(child.Nodes);
+                    }
+                }
+            }
+        }
+        public void CheckTotalTick(TreeNodeCollection theNodes)
+        {
+            if (theNodes != null)
+            {
+                foreach (TreeNode child in theNodes)
+                {
+                    if (child.Checked)
+                    {
+                        if (child.LastNode != null)
+                        {
+                            CheckTotalTick(child.Nodes);
+                        }
+                        else
+                        {
+                            pBarMax += Mod[child.Parent.Index].tc[child.Index].seq.Count;
+                            tempCounter++;
+                        }
+                    }
+                    else
+                    {
+                        CheckTotalTick(child.Nodes);
+                    }
+                }
+            }
+        }
+        public void checkIndex(int childIndex, int parentIndex)
+        {
+            stopSendFlag = false;
+            currentModule.Text = "Current Module : " + Mod[parentIndex].tc[childIndex].Module;
+            counter++;
+            String inputData = String.Empty;
+            int i = 0;
+
+            DescBox.Clear();
+            ExpectBox.Clear();
+            for (i = 0; i < Mod[parentIndex].tc[childIndex].seq.Count; i++) 
+            {
+                DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
+                ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
+                if(stopSendFlag == true) break;
+                expectedResult = String.Empty;
+                inputData = Mod[parentIndex].tc[childIndex].seq[i].FuncID + Mod[parentIndex].tc[childIndex].seq[i].Param;
+                expectedResult = Mod[parentIndex].tc[childIndex].seq[i].Expect;
+                currentTestCases = Mod[parentIndex].tc[childIndex].Module + " - " + Mod[parentIndex].tc[childIndex].TestCases;
+                currentTestCasePadded = (Mod[parentIndex].tc[childIndex].Module).PadRight(18, ' ') + " - " 
+                                        + Mod[parentIndex].tc[childIndex].TestCases + "|Seq - " + (i + 1).ToString("D4") + " - ";
+                failedTest = Mod[parentIndex].tc[childIndex].Module + " - " +Mod[parentIndex].tc[childIndex].TestCases 
+                             + " Failed , Sequence : " + (i + 1).ToString("D4");
+                switch (Mod[parentIndex].tc[childIndex].Module.ToLower())
+                {
+                    case "annunciator":
+                        Send(state.workSocket, "3001");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000" || Mod[parentIndex].tc[childIndex].seq[i].FuncID == "0001")
+                        {
+                            Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "card reader":
+                        throw new Exception("Error");
+                    case "clock":
+                        throw new Exception("Error");
+                    case "contactless reader":
+                        Send(state.workSocket, "3004");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "crypto":
+                        Send(state.workSocket, "3005");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "display":
+                        Send(state.workSocket, "3006");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "file":
+                        throw new Exception("Error");
+                    case "hardware layer":
+                        Send(state.workSocket, "3008");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "keypad":
+                        Send(state.workSocket, "3009");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "magstr reader":
+                        Send(state.workSocket, "3010");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+
+                    case "printer":
+                        Send(state.workSocket, "3011");
+                        Thread.Sleep(100);
+                        Send(state.workSocket, inputData);
+                        Send(state.workSocket, "exit");
+                        Thread.Sleep(100);
+                        break;
+                        
+                    default: break;
+                }
+                workerBusy.WaitOne();
+                expectedResult = String.Empty;
+            }
+            passTest += tempPass / Mod[parentIndex].tc[childIndex].seq.Count;
+            tempPass = 0;
+            tempTested = 0;
+        }
+        public void SendButton_Click(object sender, EventArgs e)
+        {
+            SendButtonCheck = true;
+            receiveDisplay.Focus();
+        }
+        public void ClearButton_Click(object sender, EventArgs e)
+        {
+            UncheckAll(TestMenuTree.Nodes);
+            receiveDisplay.Clear();
+            toolStripProgressBar1.Value = 0;
+            percentageDisplay.Text = "";
+            currentTest.Text = "Current Test : 0";
+            totalTest.Text = "Total Test : 0";
+            currentModule.Text = "Current Module : ";
+            DescBox.Text = String.Empty;
+            ExpectBox.Text = String.Empty;
+        }
+        public void timer1_Tick(object sender, EventArgs e)
+        {
+            timerDisplay.Text = "Server Time : " + DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt");
+        }
+        public void ServerForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            backgroundWorker1.CancelAsync();
+            backgroundWorker2.CancelAsync();
+            backgroundWorker1.Dispose();
+            Application.Exit();
+        }
+        public void ServerForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            backgroundWorker1.CancelAsync();
+            backgroundWorker2.CancelAsync();
+            backgroundWorker1.Dispose();
+            Application.Exit();
+        }
+    }
+}

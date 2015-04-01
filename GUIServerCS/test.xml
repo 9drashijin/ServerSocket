@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestMenu>
+    <!--<Category cat="Application"></Category>-->
+    <!--<Category cat="Library"></Category>-->
+    <Category cat="Driver">
+        <Module module="Annunciator">
+            <TestCase tc="TC_0001">
+                <Input>00010003200</Input>
+                <Expect>Audible 2 short beep.</Expect>
+                <Desc>Terminal produces 1 short beep</Desc>
+            </TestCase>
+            <TestCase tc="TC_0002">
+                <Input>00010003600</Input>
+                <Expect>Audible 1 long beep.</Expect>
+                <Desc>Terminal produces 1 long beep</Desc>
+            </TestCase>
+            <TestCase tc="TC_0003">
+                <Input>0002000211</Input>
+                <Expect>Green LED will be turn on.</Expect>
+                <Desc>Turn on Green LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0004">
+                <Input>0002000221</Input>
+                <Expect>Orange LED will be turn on.</Expect>
+                <Desc>Turn on Orange LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0005">
+                <Input>0002000241</Input>
+                <Expect>Red LED will be turn on.</Expect>
+                <Desc>Turn on Red LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0006">
+                <Input>0002000210</Input>
+                <Expect>Green LED will be turn off.</Expect>
+                <Desc>Turn off Green LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0007">
+                <Input>0002000220</Input>
+                <Expect>Orange LED will be turn off.</Expect>
+                <Desc>Turn off Orange LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0008">
+                <Input>0002000240</Input>
+                <Expect>Red LED will be turn off.</Expect>
+                <Desc>Turn off Red LED</Desc>
+            </TestCase>
+        </Module>
+        <!--<Module module="Card Reader"></Module>-->
+        <!--<Module module="Clock"></Module>-->
+        <Module module="Contactless Reader">
+            <TestCase tc="TC_0001">
+                <Input>00010000</Input>
+                <Expect>All the function for the  contactless reader are able to use</Expect>
+                <Desc>Initialize contactless reader module</Desc>
+            </TestCase>
+            <TestCase tc="TC_0002">
+                <Input>00020000</Input>
+                <Expect>Blue LED will be turn on for 500ms then turn off.</Expect>
+                <Desc>Turn on and off Blue LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0003">
+                <Input>00030000</Input>
+                <Expect>Yellow LED will be turn on for 500ms then turn off.</Expect>
+                <Desc>Turn on and off Yellow LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0004">
+                <Input>00040000</Input>
+                <Expect>Green LED will be turn on for 500ms then turn off.</Expect>
+                <Desc>Turn on and off Green LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0005">
+                <Input>00050000</Input>
+                <Expect>Red LED will be turn on for 500ms then turn off.</Expect>
+                <Desc>Turn on and off Red LED</Desc>
+            </TestCase>
+            <TestCase tc="TC_0006">
+                <Input>00060000</Input>
+                <Expect>oReaderID = ... oLength = 4</Expect>
+                <Desc>Get the Contactless Reader's ID of the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0007">
+                <Input>00070000</Input>
+                <Expect>oCSN[]=MIFARE card serial number oLength=4</Expect>
+                <Desc>Obtain card serial number and serial number length</Desc>
+            </TestCase>
+            <TestCase tc="TC_0008">
+                <Input>000800130a0a1a2a3a4a5</Input>
+                <Expect>Able to access the Mifare card for R/W</Expect>
+                <Desc>Unlock a sector with Key A</Desc>
+            </TestCase>
+            <TestCase tc="TC_0009">
+                <Input>000900130b0b1b2b3b4b5</Input>
+                <Expect>Able to access the Mifare card for R/W</Expect>
+                <Desc>Unlock a sector with Key B</Desc>
+            </TestCase>
+            <TestCase tc="TC_0010">
+                <Input>001000340241424344BEBDBCBB414243440AF50AF5</Input>
+                <Expect>Print content of sector 0 block 2 should be iData (0x41424344BEBDBCBB414243440AF50AF5)</Expect>
+                <Desc>Write data to a sector 0 block 2</Desc>
+            </TestCase>
+            <TestCase tc="TC_0011">
+                <Input>0011000202</Input>
+                <Expect>oData=0x41424344BEBDBCBB414243440AF50AF5</Expect>
+                <Desc>Read data from sector 0 block 2</Desc>
+            </TestCase>
+            <TestCase tc="TC_0012">
+                <Input>00120003021</Input>
+                <Expect>Print content of block 2 should be incremented by 1 (0x42424344BEBDBCBB414243440AF50AF5)</Expect>
+                <Desc>Increment the value in sector 0 block 2 by 1</Desc>
+            </TestCase>
+            <TestCase tc="TC_0013">
+                <Input>00130003021</Input>
+                <Expect>Print content of block 2 should be decremented by 1 (0x41424344BEBDBCBB414243440AF50AF5)</Expect>
+                <Desc>Decrement the value in sector 0 block 2 by 1</Desc>
+            </TestCase>
+            <TestCase tc="TC_0014">
+                <Input>00140003021</Input>
+                <Expect>Print content of block 1 should be same as block 2</Expect>
+                <Desc>Copy the data in a sector 0 block 2 to block 1</Desc>
+            </TestCase>
+            <TestCase tc="TC_0015">
+                <Input>00150000</Input>
+                <Expect>Will be unable to use the contactless reader after close</Expect>
+                <Desc>Close contactless reader module</Desc>
+            </TestCase>
+        </Module>
+        <Module module="Crypto">
+            <TestCase tc="TC_0001">
+                <!--Function 0001:DES + total length 0037 + type 1:encryption + key length 08 + 'key' + data length 08 + 'data'-->
+                <Input>00010037108a1a2a3a4a5a6a7a808c1c2c3c4c5c6c7c8</Input>
+                <Expect>oData=0x8596D417213B7908</Expect>
+                <Desc>DES Encryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0002">
+                <Input>00010037208a1a2a3a4a5a6a7a8088596D417213B7908</Input>
+                <Expect>oData=0xC1C2C3C4C5C6C7C8</Expect>
+                <Desc>DES Decryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0003">
+                <Input>00010053316a1a2a3a4a5a6a7a8f1f2f3f4f5f6f7f808c1c2c3c4c5c6c7c8</Input>
+                <Expect>oData=0x080475A08606A452</Expect>
+                <Desc>3DES Encryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0004">
+                <Input>00010053416a1a2a3a4a5a6a7a8f1f2f3f4f5f6f7f808080475A08606A452</Input>
+                <Expect>oData=0xC1C2C3C4C5C6C7C8</Expect>
+                <Desc>3DES Decryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0005">
+                <Input>00020069108A1B2C3D4E5F6A7B816AB12CD34EF56EF780099AB34CD56EF120102030405060708</Input>
+                <Expect>oData=0xB5C245DFD9135B436F9F15E3C2EA159C</Expect>
+                <Desc>DES CBC Encryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0006">
+                <Input>00020069208A1B2C3D4E5F6A7B816B5C245DFD9135B436F9F15E3C2EA159C0102030405060708</Input>
+                <Expect>oData=0xAB12CD34EF56EF780099AB34CD56EF12</Expect>
+                <Desc>DES CBC Decryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0007">
+                <Input>00020085316A1B2C3D4E5F6A7B8C0D8E7F6A5B4C3D216AB12CD34EF56EF780099AB34CD56EF120102030405060708</Input>
+                <Expect>oData=0x56E07C7CCE83154C1432CA43202FCFDD</Expect>
+                <Desc>3DES CBC Encryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0008">
+                <Input>00020085416A1B2C3D4E5F6A7B8C0D8E7F6A5B4C3D21656E07C7CCE83154C1432CA43202FCFDD0102030405060708</Input>
+                <Expect>oData=0xAB12CD34EF56EF780099AB34CD56EF12</Expect>
+                <Desc>3DES CBC Decryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0009">
+                <Input>0003006510800AA11BB22CC33DD14AB12CD34EF56EF780099AB34CD561020304050607080</Input>
+                <Expect>oData=0x90DD570D8AAFEEEAEDFF5463079F574A</Expect>
+                <Desc>DES CBC PKCS5 Encryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0010">
+                <Input>0003006920800AA11BB22CC33DD1690DD570D8AAFEEEAEDFF5463079F574A1020304050607080</Input>
+                <Expect>oData=0xAB12CD34EF56EF780099AB34CD560202</Expect>
+                <Desc>DES CBC PKCS5 Decryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0011">
+                <Input>0003008131600AA11BB22CC33DD44EE55FF66AA77BB14AB12CD34EF56EF780099AB34CD561020304050607080</Input>
+                <Expect>oData=0x3A7FC2D35F1813551A8A748D483B6924</Expect>
+                <Desc>3DES CBC PKCS5 Encryption</Desc>
+            </TestCase>
+            <TestCase tc="TC_0012">
+                <Input>0003008541600AA11BB22CC33DD44EE55FF66AA77BB163A7FC2D35F1813551A8A748D483B69241020304050607080</Input>
+                <Expect>oData=0xAB12CD34EF56EF780099AB34CD560202</Expect>
+                <Desc>3DES CBC PKCS5 Decryption</Desc>
+            </TestCase>
+        </Module>
+        <Module module="Display">
+            <TestCase tc="TC_0001">
+                <Input>00010000</Input>
+                <Expect>The FontID has been set to DISP_FONT_ID_ENGLISH</Expect>
+                <Desc>Select ENGLISH font to display on LCD</Desc>
+            </TestCase>
+            <TestCase tc="TC_0002">
+                <Input>00020000</Input>
+                <Expect>The FontID has been set to DISP_FONT_ID_CHINESE</Expect>
+                <Desc>Select CHINESE font to display on LCD</Desc>
+            </TestCase>
+            <TestCase tc="TC_0003">
+                <Input>00030000</Input>
+                <Expect>oNumColumn = 0 oNumLine = 0</Expect>
+                <Desc>Get current window size(default). Second time running this test will not pass as font is already set. Reset test program to pass again.</Desc>
+            </TestCase>
+            <TestCase tc="TC_0004">
+                <Input>00040000</Input>
+                <Expect>oNumColumn = 21 oNumLine = 8</Expect>
+                <Desc>Get current window size based on 8x21 font size</Desc>
+            </TestCase>
+            <TestCase tc="TC_0005">
+                <Input>00050000</Input>
+                <Expect>oNumColumn = 16 oNumLine = 8</Expect>
+                <Desc>Get current window size based on 8x16 font size</Desc>
+            </TestCase>
+            <TestCase tc="TC_00006">
+                <Input>00060000</Input>
+                <Expect>oNumColumn = 16 oNumLine = 4</Expect>
+                <Desc>Get current window size based on 4x16 font size</Desc>
+            </TestCase>
+            <TestCase tc="TC_0007">
+                <Input>00070000</Input>
+                <Expect>Font size of 8X21 is displayed on the screen</Expect>
+                <Desc>Select 8x21 font size for ENGLISH font todisplay on LCD</Desc>
+            </TestCase>
+            <TestCase tc="TC_0008">
+                <Input>00080000</Input>
+                <Expect>Font size of 4X16 is displayed on the screen</Expect>
+                <Desc>Select 4x16 font size for ENGLISH font to display on LCD</Desc>
+            </TestCase>
+            <TestCase tc="TC_0009">
+                <Input>00090000</Input>
+                <Expect>Font size of 8X16 is displayed on the screen (Chinese word supported)</Expect>
+                <Desc>Select 8x16 font size for CHINESE font to display on LCD</Desc>
+            </TestCase>
+            <TestCase tc="TC_0010">
+                <Input>00100000</Input>
+                <Expect>Font size of 4X16 is displayed on the screen (Chinese word supported)</Expect>
+                <Desc>Select 4x16 font size for CHINESE font to display on LCD</Desc>
+            </TestCase>
+            <TestCase tc="TC_00011">
+                <Input>00110000</Input>
+                <Expect>There are 21 characters each line.</Expect>
+                <Desc>Fill the LCD display with strings</Desc>
+            </TestCase>
+            <TestCase tc="TC_0012">
+                <Input>00120000</Input>
+                <Expect>The display is cleared.</Expect>
+                <Desc>Clear the LCD display</Desc>
+            </TestCase>
+        </Module>
+        <!--<Module module="File"></Module>-->
+        <Module module="Hardware Layer">
+            <TestCase tc="TC_0001">
+              <Input>00010000</Input>
+              <Expect>oSerialNum = Terminal serial number.</Expect>
+              <Desc>Get the serial number of the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0002">
+              <Input>00020000</Input>
+              <Expect>oFirmwareVer = Terminal firmware version.</Expect>
+              <Desc>Get the firmware version of the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0003">
+              <Input>00030000</Input>
+              <Expect>oModule = HWL_MODULE_MODEM</Expect>
+              <Desc>Check whether modem module exists in the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0004">
+              <Input>00040000</Input>
+              <Expect>oModule = HWL_MODULE_ETHERNET</Expect>
+              <Desc>Check whether ethernet module exists in the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0005">
+              <Input>00050000</Input>
+              <Expect>oModule = HWL_MODULE_GPRS</Expect>
+              <Desc>Check whether GPRS module exists in the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0006">
+              <Input>00060000</Input>
+              <Expect>oModule = HWL_MODULE_CONTACTLESS</Expect>
+              <Desc>Check whether contactless reader module exists in the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0007">
+              <Input>00070000</Input>
+              <Expect>oModule = HWL_MODULE_BATTERY</Expect>
+              <Desc>Check whether battery exists in the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0008">
+              <Input>00080000</Input>
+              <Expect>oModule = HWL_MODULE_PCI_PINPAD</Expect>
+              <Desc>Check whether PCI pinpad module exists inthe terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0009">
+              <Input>00090000</Input>
+              <Expect>oStatus = HWL_BATTERY_EXIST oCapacity = Current battery percentage (if terminal has battery)</Expect>
+              <Desc>Check whether battery exists or not and current battery percentage</Desc>
+            </TestCase>
+            <TestCase tc="TC_0010">
+              <Input>00100000</Input>
+              <Expect>oStatus = HWL_BATTERY_CHARGING oCapacity = Current battery percentage (if terminal has battery)</Expect>
+              <Desc>Check whether battery is charging or not and current battery percentage</Desc>
+            </TestCase>
+            <TestCase tc="TC_0011">
+              <Input>00110000</Input>
+              <Expect>Should return current number of ticks</Expect>
+              <Desc>Get amount of clock ticks since power up</Desc>
+            </TestCase>
+            <TestCase tc="TC_0012">
+              <Input>00120000</Input>
+              <Expect>Subtracted value should be 2000(± 5)</Expect>
+              <Desc>Wait for set amount of time in miliseconds</Desc>
+            </TestCase>
+            <TestCase tc="TC_0013">
+              <Input>00130000</Input>
+              <Expect>The terminal will turn off</Expect>
+              <Desc>Turn off the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0014">
+              <Input>00140000</Input>
+              <Expect>The terminal will restart</Expect>
+              <Desc>Reset the terminal</Desc>
+            </TestCase>
+            <TestCase tc="TC_0015">
+              <Input>00150000</Input>
+              <Expect>The terminal will go to sleep mode</Expect>
+              <Desc>Set terminal to sleep mode (Require terminal with battery)</Desc>
+            </TestCase>
+        </Module>
+        <Module module="Keypad">
+            <TestCase tc="TC_0001">
+              <Input>00010000</Input>
+              <Expect>The Keypad BackLight will be turn OFF for 500ms then turn ON. (blink 1 time)</Expect>
+              <Desc>Keypad backlight turn off and on</Desc>
+            </TestCase>
+            <TestCase tc="TC_0002">
+              <Input>00020000</Input>
+              <Expect>Return KEYP_KEY_NULL</Expect>
+              <Desc>Get the last key pressed (NULL)</Desc>
+            </TestCase>
+            <TestCase tc="TC_0003">
+              <Input>00030000</Input>
+              <Expect>Pass if KEYP_KEY_1 pressed</Expect>
+              <Desc>Wait for key 1 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0004">
+              <Input>00040000</Input>
+              <Expect>Pass if KEYP_KEY_2 pressed</Expect>
+              <Desc>Wait for key 2 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0005">
+              <Input>00050000</Input>
+              <Expect>Pass if KEYP_KEY_3 pressed</Expect>
+              <Desc>Wait for key 3 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0006">
+              <Input>00060000</Input>
+              <Expect>Pass if KEYP_KEY_4 pressed</Expect>
+              <Desc>Wait for key 4 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0007">
+              <Input>00070000</Input>
+              <Expect>Pass if KEYP_KEY_5 pressed</Expect>
+              <Desc>Wait for key 5 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0008">
+              <Input>00080000</Input>
+              <Expect>Pass if KEYP_KEY_6 pressed</Expect>
+              <Desc>Wait for key 6 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0009">
+              <Input>00090000</Input>
+              <Expect>Pass if KEYP_KEY_7 pressed</Expect>
+              <Desc>Wait for key 7 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0010">
+              <Input>00100000</Input>
+              <Expect>Pass if KEYP_KEY_8 pressed</Expect>
+              <Desc>Wait for key 8 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0011">
+              <Input>00110000</Input>
+              <Expect>Pass if KEYP_KEY_9 pressed</Expect>
+              <Desc>Wait for key 9 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0012">
+              <Input>00120000</Input>
+              <Expect>Pass if KEYP_KEY_0 pressed</Expect>
+              <Desc>Wait for key 0 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0013">
+              <Input>00130000</Input>
+              <Expect>Pass if KEYP_KEY_ASTERISK pressed</Expect>
+              <Desc>Wait for key 00 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0014">
+              <Input>00140000</Input>
+              <Expect>Pass if KEYP_KEY_HASH pressed</Expect>
+              <Desc>Wait for key DOT to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0015">
+              <Input>00150000</Input>
+              <Expect>Pass if KEYP_KEY_CANCEL pressed</Expect>
+              <Desc>Wait for key CANCEL to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0016">
+              <Input>00160000</Input>
+              <Expect>Pass if KEYP_KEY_CLEAR pressed</Expect>
+              <Desc>Wait for key CLEAR to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0017">
+              <Input>00170000</Input>
+              <Expect>Pass if KEYP_KEY_ENTER pressed</Expect>
+              <Desc>Wait for key ENTER to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0018">
+              <Input>00180000</Input>
+              <Expect>Pass if KEYP_KEY_F1 pressed</Expect>
+              <Desc>Wait for key F1 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0019">
+              <Input>00190000</Input>
+              <Expect>Pass if KEYP_KEY_F2 pressed</Expect>
+              <Desc>Wait for key F2 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0020">
+              <Input>00200000</Input>
+              <Expect>Pass if KEYP_KEY_F3 pressed</Expect>
+              <Desc>Wait for key F3 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0021">
+              <Input>00210000</Input>
+              <Expect>Pass if KEYP_KEY_F4 pressed</Expect>
+              <Desc>Wait for key F4 to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0022">
+              <Input>00220000</Input>
+              <Expect>Pass if KEYP_KEY_UP pressed</Expect>
+              <Desc>Wait for key UP to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0023">
+              <Input>00230000</Input>
+              <Expect>Pass if KEYP_KEY_DOWN pressed</Expect>
+              <Desc>Wait for key DOWN to be pressed</Desc>
+            </TestCase>
+            <TestCase tc="TC_0024">
+              <Input>00240000</Input>
+              <Expect>Should return NULL(no key pressed)</Expect>
+              <Desc>Press any key then clear the buffer</Desc>
+            </TestCase>
+        </Module>
+        <Module module="MagStr Reader">
+          <TestCase tc="TC_0001">
+            <Input>00010000</Input>
+            <Expect>If card swiped then pass.</Expect>
+            <Desc>Wait for card swipe</Desc>
+          </TestCase>
+          <TestCase tc="TC_0002">
+            <Input>00020000</Input>
+            <Expect>oErrCode = 0 (Success) oTrackData = Name of card swiped</Expect>
+            <Desc>Obtain data from card swipe</Desc>
+          </TestCase>
+          <TestCase tc="TC_0003">
+            <Input>00030000</Input>
+            <Expect>Should fail to get track data again as it is flushed</Expect>
+            <Desc>Clear the buffer</Desc>
+          </TestCase>
+        </Module>
+        <Module module="Printer">
+          <TestCase tc="TC_0001">
+            <Input>00010000</Input>
+            <Expect>The iFontID had set to TRP_FONT_ID_ENGLISH</Expect>
+            <Desc>Select ENGLISH font to be printed</Desc>
+          </TestCase>
+          <TestCase tc="TC_0002">
+            <Input>00020000</Input>
+            <Expect>The iFontID had set to TRP_FONT_ID_CHINESE</Expect>
+            <Desc>Select CHINESE font to be printed</Desc>
+          </TestCase>
+          <TestCase tc="TC_0003">
+            <Input>00030000</Input>
+            <Expect>The font size will be smaller</Expect>
+            <Desc>Select 1X40 font size for the printer</Desc>
+          </TestCase>
+          <TestCase tc="TC_0004">
+            <Input>00040000</Input>
+            <Expect>The font size will be bigger</Expect>
+            <Desc>Select 1X20 font size for the printer</Desc>
+          </TestCase>
+          <TestCase tc="TC_0005">
+            <Input>00050000</Input>
+            <Expect>Able to print for the canvas function</Expect>
+            <Desc>Initialize Canvas module</Desc>
+          </TestCase>
+          <TestCase tc="TC_0006">
+            <Input>00060000</Input>
+            <Expect>Print iString at location 1, 1</Expect>
+            <Desc>Put a string into print buffer and print it out at location 1, 1</Desc>
+          </TestCase>
+          <TestCase tc="TC_0007">
+            <Input>00070004TEST</Input>
+            <Expect>Print iImageData(Castles logo) at location 10,20</Expect>
+            <Desc>Put an image into print buffer and print it out at location 10, 20</Desc>
+          </TestCase>
+          <TestCase tc="TC_0008">
+            <Input>00080000</Input>
+            <Expect>Print a dark box of size 300x50</Expect>
+            <Desc>Fill area of canvas with black box of size 300x50</Desc>
+          </TestCase>
+          <TestCase tc="TC_0009">
+            <Input>00090000</Input>
+            <Expect>Data  in Buffer be printed out</Expect>
+            <Desc>Print String in the Buffer</Desc>
+          </TestCase>
+          <TestCase tc="TC_0010">
+            <Input>00100004TEST</Input>
+            <Expect>Printer will print "TC_30110010"</Expect>
+            <Desc>Print "TC_30110010" on the paper</Desc>
+          </TestCase>
+          <TestCase tc="TC_0011">
+            <Input>00110000</Input>
+            <Expect>Return TRP_STATUS_READY</Expect>
+            <Desc>Get ready status</Desc>
+          </TestCase>
+          <TestCase tc="TC_0012">
+            <Input>00120000</Input>
+            <Expect>The printer will not print, return overheat status</Expect>
+            <Desc>Get overheat status</Desc>
+          </TestCase>
+          <TestCase tc="TC_0013">
+            <Input>00130000</Input>
+            <Expect>Return TRP_STATUS_PAPER_OUT</Expect>
+              <Desc>Get out of paper status</Desc>
+          </TestCase>
+          <TestCase tc="TC_0014">
+            <Input>00140000</Input>
+            <Expect>The printed text is lightest</Expect>
+            <Desc>Print a text with heat level = 1</Desc>
+          </TestCase>
+          <TestCase tc="TC_0015">
+            <Input>00150000</Input>
+            <Expect>The printed text is ighter</Expect>
+            <Desc>Print a text with heat level = 2</Desc>
+          </TestCase>
+          <TestCase tc="TC_0016">
+            <Input>00160000</Input>
+            <Expect>The printed text is default intensity</Expect>
+            <Desc>Print a text with heat level = 3</Desc>
+          </TestCase>
+          <TestCase tc="TC_0017">
+            <Input>00170000</Input>
+            <Expect>The printed text is dark</Expect>
+            <Desc>Print a text with heat level = 4</Desc>
+          </TestCase>
+          <TestCase tc="TC_0018">
+            <Input>00180000</Input>
+            <Expect>The printed text is darker</Expect>
+            <Desc>Print a text with heat level = 5</Desc>
+          </TestCase>
+          <TestCase tc="TC_0019">
+            <Input>00190000</Input>
+            <Expect>The printed text is darkest</Expect>
+            <Desc>Print a text with heat level = 6</Desc>
+          </TestCase>
+          <TestCase tc="TC_0020">
+            <Input>00200000</Input>
+            <Expect>Paper new line feed 5 lines</Expect>
+            <Desc>Line Feed on the printed paper</Desc>
+          </TestCase>
+        </Module>
+    </Category>
+</TestMenu>
