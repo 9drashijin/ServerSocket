@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--Function Name
+      0001 : Ann_Beep()
+      0002 : Ann_SetLED()
+      8000 : Delay()
+      ===================
+      Ann_Beep    : -> 200 (short beep duration for 200 ms) 
+      Ann_Beep    : -> 600 ( long beep duration for 600 ms) 
+      Ann_SetLED  : -> 1 : Green LED   + (1: Turn On / 0:Turn Off)
+                       2 : Orange LED  + (1: Turn On / 0:Turn Off)
+                       4 : Red LED     + (1: Turn On / 0:Turn Off)
+      Delay       : -> 100 (delay duration of 100 ms)
+-->
+<TestMenu>
+  <Category>Driver</Category>
+  <Module>Annunciator</Module>
+  <TestCase tc="TC_0001">
+    <SeqNum sn="0001">
+      <FuncID>0001</FuncID>
+      <Param>600</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Terminal produces 1 long beep</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0002">
+    <SeqNum sn="0001">
+      <FuncID>0001</FuncID>
+      <Param>500</Param>
+      <Expect></Expect>
+      <Desc>Terminal produces 1 short beep</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>200</Param>
+      <Expect></Expect>
+      <Desc>Delay for 200ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0001</FuncID>
+      <Param>500</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Terminal produces 1 short beep</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0003">
+    <SeqNum sn="0001">
+      <FuncID>0002</FuncID>
+      <Param>11</Param>
+      <Expect></Expect>
+      <Desc>Turn on Green LED</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>100</Param>
+      <Expect></Expect>
+      <Desc>Delay for 100ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0002</FuncID>
+      <Param>10</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Turn off Green LED</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0004">
+    <SeqNum sn="0001">
+      <FuncID>0002</FuncID>
+      <Param>21</Param>
+      <Expect></Expect>
+      <Desc>Turn on Orange LED</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>100</Param>
+      <Expect></Expect>
+      <Desc>Delay for 100ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0002</FuncID>
+      <Param>20</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Turn off Orange LED</Desc>
+    </SeqNum>
+    
+  </TestCase>
+  <TestCase tc="TC_0005">
+    <SeqNum sn="0001">
+      <FuncID>0002</FuncID>
+      <Param>41</Param>
+      <Expect></Expect>
+      <Desc>Turn on Red LED</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0002">
+      <FuncID>8000</FuncID>
+      <Param>100</Param>
+      <Expect></Expect>
+      <Desc>Delay for 100ms</Desc>
+    </SeqNum>
+    
+    <SeqNum sn="0003">
+      <FuncID>0002</FuncID>
+      <Param>40</Param>
+      <Expect>PROMPT_USER_INPUT</Expect>
+      <Desc>Turn off Red LED</Desc>
+    </SeqNum>
+    
+  </TestCase>
+</TestMenu>

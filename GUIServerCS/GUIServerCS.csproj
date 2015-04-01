@@ -120,6 +120,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Annunciator.xml" />
     <Content Include="Contactless Reader.xml" />
     <Content Include="Crypto.xml" />
   </ItemGroup>
