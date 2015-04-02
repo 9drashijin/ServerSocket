@@ -119,17 +119,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Annunciator.xml" />
-    <Content Include="Annunciator2.xml" />
-    <Content Include="Contactless Reader.xml" />
-    <Content Include="Crypto.xml" />
-    <Content Include="Display.xml" />
-    <Content Include="Hardware Layer.xml" />
-    <Content Include="Keypad.xml" />
-    <Content Include="MagStr Reader.xml" />
-    <Content Include="Printer.xml" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
