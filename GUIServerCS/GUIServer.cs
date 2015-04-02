@@ -246,7 +246,7 @@ namespace GUIServerCS
                 // get the data and transfer to string builder
                 state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                 content = state.str.ToString();
-                
+
                 if (expectedResult == "PROMPT_USER_INPUT")
                 {
                     workerBusy.Reset();
@@ -291,7 +291,15 @@ namespace GUIServerCS
                 }
                 else
                 {
-                    content += " FAIL";
+                    if (content == "TRUE" || content == "FALSE")
+                    {
+                        content = String.Empty;
+                        content = "FAIL";
+                    }
+                    else
+                    {
+                        content += " FAIL";
+                    }
                     receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
                     report.WriteLine(currentTestCasePadded + content);
                 }
