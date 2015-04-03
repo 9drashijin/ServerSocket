@@ -55,7 +55,7 @@ namespace GUIServerCS
         String currentTestCases = String.Empty, currentTestCasePadded = String.Empty;
         Module[] Mod = new Module[11]; // total module size
         String content = String.Empty; // Received string data
-        bool SendButtonCheck = false, stopSendFlag = false;
+        bool SendButtonCheck = false, stopSendFlag = false , timerTickFlag = false;
         int counter = 0, tempCounter = 0, GparentIndex, GchildIndex, passTest = 0, tempPass = 0;
         int pBarMax = 0;
         StreamWriter report = new StreamWriter("ResultLog.txt", true); //Text file at current directory
@@ -210,105 +210,129 @@ namespace GUIServerCS
         }
         public void Read(StateObject state)
         {
-            ClientHandler.BeginReceive(state.buffer, 0, 1024, 0, new AsyncCallback(ReadCallBack), state);
+            //receiveDisplay.AppendText("TIMER START" + Environment.NewLine);
+            while (timer2.Enabled == true && timerTickFlag == false)
+            {
+                //receiveDisplay.AppendText("TIMING" + Environment.NewLine);
+                ClientHandler.BeginReceive(state.buffer, 0, 1024, 0, new AsyncCallback(ReadCallBack), state);
+            }
+            //receiveDisplay.AppendText("TIMEOUT" + Environment.NewLine);
+            timer2.Stop();
+            timer2.Enabled = false;
+            timerTickFlag = false;
+            
         }
         public void ReadCallBack(IAsyncResult asyn)
         {
             StateObject state = (StateObject)asyn.AsyncState;
             Socket handler = state.workSocket;
-
-            int bytesRead = handler.EndReceive(asyn);
-            if (bytesRead > 0)
-            {
-                //ProgressBar function
-                toolStripProgressBar1.Maximum = pBarMax;
-                toolStripProgressBar1.Increment(1);
-
-                // To find the progress bar percentage
-                int percent = (int)(((double)toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum) * 100);
-                percentageDisplay.Text = percent.ToString() + "%";
-
-                // To smoothen the updating of the progress bar
-                int value = toolStripProgressBar1.Value;
-                if (value == toolStripProgressBar1.Maximum)//To correctly update progress bar
+            
+            //receiveDisplay.AppendText("TIMER START" + Environment.NewLine);
+            //while (timer2.Enabled == true && timerTickFlag == false )
+            //{ 
+                //receiveDisplay.AppendText("TIMING" + Environment.NewLine);
+                int bytesRead = handler.EndReceive(asyn);
+                if (bytesRead > 0)
                 {
-                    toolStripProgressBar1.Maximum = value + 1;
-                    toolStripProgressBar1.Value = value + 1;
-                    toolStripProgressBar1.Maximum = value;
-                }
-                else
-                {
-                    toolStripProgressBar1.Value = value + 1;
-                }
-                toolStripProgressBar1.Value = value;
+                    //ProgressBar function
+                    toolStripProgressBar1.Maximum = pBarMax;
+                    toolStripProgressBar1.Increment(1);
 
-                currentTest.Text = "Current Test : " + (counter).ToString();
-                // get the data and transfer to string builder
-                state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-                content = state.str.ToString();
+                    // To find the progress bar percentage
+                    int percent = (int)(((double)toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum) * 100);
+                    percentageDisplay.Text = percent.ToString() + "%";
 
-                if (expectedResult == "PROMPT_USER_INPUT")
-                {
-                    workerBusy.Reset();
+                    // To smoothen the updating of the progress bar
+                    int value = toolStripProgressBar1.Value;
+                    if (value == toolStripProgressBar1.Maximum)//To correctly update progress bar
+                    {
+                        toolStripProgressBar1.Maximum = value + 1;
+                        toolStripProgressBar1.Value = value + 1;
+                        toolStripProgressBar1.Maximum = value;
+                    }
+                    else
+                    {
+                        toolStripProgressBar1.Value = value + 1;
+                    }
+                    toolStripProgressBar1.Value = value;
+
+                    currentTest.Text = "Current Test : " + (counter).ToString();
+                    // get the data and transfer to string builder
+                    state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
+                    content = state.str.ToString();
+
+                    if (expectedResult == "PROMPT_USER_INPUT")
+                    {
+                        workerBusy.Reset();
+                        content = String.Empty;
+                        DialogResult result = MessageBox.Show(currentTestCases + Environment.NewLine +
+                            "Please confirm if the test pass." + Environment.NewLine + description, "User Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                        if (result == DialogResult.Yes)
+                        {
+                            content += "PASS";
+                        }
+                        else if (result == DialogResult.No)
+                        {
+                            content += "FAIL";
+                        }
+                        else
+                        {
+                            content += "ABORTED";
+                            stopSendFlag = true;
+                            UncheckAll(TestMenuTree.Nodes);
+                            CheckTicked(TestMenuTree.Nodes);
+                        }
+                        receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+                        report.WriteLine(currentTestCasePadded + content);
+                    }
+                    else if (expectedResult == "")
+                    {
+                        tempPass++;
+                    }
+                    else if (content.Trim() == expectedResult)
+                    {
+                        if(content == "TRUE" || content == "FALSE")
+                        {
+                            content = String.Empty;
+                            content = "PASS";
+                        }
+                        else
+                        {
+                            content += " PASS";
+                        }
+                        receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+                        report.WriteLine(currentTestCasePadded + content);
+                    }
+                    else
+                    {
+                        if (content == "TRUE" || content == "FALSE")
+                        {
+                            content = String.Empty;
+                            content = "FAIL";
+                        }
+                        else
+                        {
+                            content += " FAIL";
+                        }
+                        receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
+                        report.WriteLine(currentTestCasePadded + content);
+                    }
+                    if (content.Contains("PASS")) tempPass++;
+                    workerBusy.Set();
+                    expectedResult = String.Empty;
                     content = String.Empty;
-                    DialogResult result = MessageBox.Show(currentTestCases + Environment.NewLine +
-                        "Please confirm if the test pass." + Environment.NewLine + description, "User Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
-                    if (result == DialogResult.Yes)
-                    {
-                        content += "PASS";
-                    }
-                    else if (result == DialogResult.No)
-                    {
-                        content += "FAIL";
-                    }
-                    else
-                    {
-                        content += "ABORTED";
-                        stopSendFlag = true;
-                        UncheckAll(TestMenuTree.Nodes);
-                        CheckTicked(TestMenuTree.Nodes);
-                    }
-                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
-                    report.WriteLine(currentTestCasePadded + content);
+                    state.str.Clear();
+
+                    timer2.Stop();
+                    timer2.Enabled = false;
+                    timerTickFlag = false;
+                    //break;
                 }
-                else if (expectedResult == "")
-                {
-                    tempPass++;
-                }
-                else if (content.Trim() == expectedResult)
-                {
-                    if(content == "TRUE" || content == "FALSE")
-                    {
-                        content = String.Empty;
-                        content = "PASS";
-                    }
-                    else
-                    {
-                        content += " PASS";
-                    }
-                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
-                    report.WriteLine(currentTestCasePadded + content);
-                }
-                else
-                {
-                    if (content == "TRUE" || content == "FALSE")
-                    {
-                        content = String.Empty;
-                        content = "FAIL";
-                    }
-                    else
-                    {
-                        content += " FAIL";
-                    }
-                    receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
-                    report.WriteLine(currentTestCasePadded + content);
-                }
-                if (content.Contains("PASS")) tempPass++;
-                workerBusy.Set();
-                expectedResult = String.Empty;
-                content = String.Empty;
-                state.str.Clear();
-            }
+            //}
+            //timer2.Stop();
+            //timer2.Enabled = false;
+            //timerTickFlag = false;
+            //receiveDisplay.AppendText("TIMEOUT" + Environment.NewLine);
         }
         public void Send(Socket handler, String data)
         {
@@ -391,7 +415,7 @@ namespace GUIServerCS
             backgroundWorker2.CancelAsync();
             backgroundWorker1.RunWorkerAsync();
         }
-        private void TestMenuTree_NodeMouseHover(object sender, TreeNodeMouseHoverEventArgs e)
+        public void TestMenuTree_NodeMouseHover(object sender, TreeNodeMouseHoverEventArgs e)
         {
             DescBox.Clear();
             ExpectBox.Clear();
@@ -408,7 +432,7 @@ namespace GUIServerCS
                 }
             }
         }
-        private void TestMenuTree_AfterSelect(object sender, TreeViewEventArgs e)
+        public void TestMenuTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             DescBox.Clear();
             ExpectBox.Clear();
@@ -587,7 +611,7 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            Thread.Sleep(100);
+                            Thread.Sleep(250);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -647,6 +671,7 @@ namespace GUIServerCS
                     default: break;
                 }
                 workerBusy.WaitOne();
+                //MessageBox.Show("after "+expectedResult);
                 expectedResult = String.Empty;
             }
             passTest += tempPass / Mod[parentIndex].tc[childIndex].seq.Count;
@@ -654,6 +679,8 @@ namespace GUIServerCS
         }
         public void SendButton_Click(object sender, EventArgs e)
         {
+            timer2.Enabled = true;
+            timer2.Start();
             SendButtonCheck = true;
             receiveDisplay.Focus();
         }
@@ -683,6 +710,11 @@ namespace GUIServerCS
             backgroundWorker1.Dispose();
             backgroundWorker2.Dispose();
             System.Environment.Exit(1);
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            timerTickFlag = true;
         }
     }
 }
