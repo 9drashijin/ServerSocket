@@ -55,7 +55,6 @@
             this.currentModule = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.timerDisplay = new System.Windows.Forms.Label();
-            this.timer2 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -220,11 +219,6 @@
             resources.ApplyResources(this.timerDisplay, "timerDisplay");
             this.timerDisplay.Name = "timerDisplay";
             // 
-            // timer2
-            // 
-            this.timer2.Interval = 5000;
-            this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
-            // 
             // ServerForm
             // 
             this.AcceptButton = this.SendButton;
@@ -287,7 +281,6 @@
         private System.Windows.Forms.ToolStripStatusLabel currentModule;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Label timerDisplay;
-        private System.Windows.Forms.Timer timer2;
     }
 }
 
