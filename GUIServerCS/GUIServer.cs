@@ -311,7 +311,7 @@ namespace GUIServerCS
                     state.str.Clear();
 
                     timer2.Stop();
-                    //timer2.Enabled = false;
+                    timer2.Enabled = false;
                     timerTickFlag = false;
                 }
         }
@@ -390,7 +390,7 @@ namespace GUIServerCS
         private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             timer2.Stop();
-            //timer2.Enabled = false;
+            timer2.Enabled = false;
             timerTickFlag = false;
             workerBusy.Set();
         }
@@ -555,10 +555,9 @@ namespace GUIServerCS
             description = String.Empty;
             DescBox.Clear();
             ExpectBox.Clear();
-            //timer2.Start();
+            
             for (i = 0; i < Mod[parentIndex].tc[childIndex].seq.Count; i++)
             {
-                //workerBusy.Reset();
                 backgroundWorker2.RunWorkerAsync();
                 DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
                 ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
@@ -623,6 +622,14 @@ namespace GUIServerCS
                         Send(state.workSocket, "3006");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
+                        if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000")
+                        {
+                            Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
@@ -633,6 +640,14 @@ namespace GUIServerCS
                         Send(state.workSocket, "3008");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
+                        if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000")
+                        {
+                            Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
@@ -641,6 +656,14 @@ namespace GUIServerCS
                         Send(state.workSocket, "3009");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
+                        if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000")
+                        {
+                            Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
@@ -649,6 +672,14 @@ namespace GUIServerCS
                         Send(state.workSocket, "3010");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
+                        if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000")
+                        {
+                            Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
@@ -657,6 +688,14 @@ namespace GUIServerCS
                         Send(state.workSocket, "3011");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
+                        if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000")
+                        {
+                            Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
