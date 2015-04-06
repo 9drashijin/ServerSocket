@@ -210,30 +210,17 @@ namespace GUIServerCS
         }
         public void Read(StateObject state)
         {
-            //receiveDisplay.AppendText("TIMER START" + Environment.NewLine);
-            while (timer2.Enabled == true && timerTickFlag == false)
-            {
-                //receiveDisplay.AppendText("TIMING" + Environment.NewLine);
-                ClientHandler.BeginReceive(state.buffer, 0, 1024, 0, new AsyncCallback(ReadCallBack), state);
-            }
-            //receiveDisplay.AppendText("TIMEOUT" + Environment.NewLine);
-            timer2.Stop();
-            timer2.Enabled = false;
-            timerTickFlag = false;
-            
+            ClientHandler.BeginReceive(state.buffer, 0, 1024, 0, new AsyncCallback(ReadCallBack), state);
         }
         public void ReadCallBack(IAsyncResult asyn)
         {
             StateObject state = (StateObject)asyn.AsyncState;
             Socket handler = state.workSocket;
             
-            //receiveDisplay.AppendText("TIMER START" + Environment.NewLine);
-            //while (timer2.Enabled == true && timerTickFlag == false )
-            //{ 
-                //receiveDisplay.AppendText("TIMING" + Environment.NewLine);
                 int bytesRead = handler.EndReceive(asyn);
                 if (bytesRead > 0)
                 {
+                    
                     //ProgressBar function
                     toolStripProgressBar1.Maximum = pBarMax;
                     toolStripProgressBar1.Increment(1);
@@ -324,15 +311,9 @@ namespace GUIServerCS
                     state.str.Clear();
 
                     timer2.Stop();
-                    timer2.Enabled = false;
+                    //timer2.Enabled = false;
                     timerTickFlag = false;
-                    //break;
                 }
-            //}
-            //timer2.Stop();
-            //timer2.Enabled = false;
-            //timerTickFlag = false;
-            //receiveDisplay.AppendText("TIMEOUT" + Environment.NewLine);
         }
         public void Send(Socket handler, String data)
         {
@@ -348,7 +329,6 @@ namespace GUIServerCS
             BackgroundWorker worker = sender as BackgroundWorker;
             DisplayServerInfo();
             ServerListen();
-            backgroundWorker2.RunWorkerAsync();
             DisplayClientInfo();
 
             int i = 0;
@@ -372,6 +352,10 @@ namespace GUIServerCS
                         report.WriteLine();
                         receiveDisplay.AppendText("\r\n-------------------------\r\nOVERALL UNIT TEST SUMMARY\r\n-------------------------\r\nTESTED : "
                             + tempCounter + "\r\nPASSED : " + passTest + "\r\nFAILED : " + (tempCounter - passTest) + "\r\n-------------------------\r\n\r\n");
+                        //if (passTest != tempCounter) 
+                        //{
+                        //    receiveDisplay.AppendText("FAILED TEST : "+ failedTest + Environment.NewLine);
+                        //}
                     }
                     catch (Exception) { break; }
                 }
@@ -388,21 +372,27 @@ namespace GUIServerCS
         }
         public void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
         {
-            BackgroundWorker worker = sender as BackgroundWorker;
-            while ((worker.CancellationPending != true))
+            workerBusy.Reset();
+            while (timer2.Enabled == true && timerTickFlag == false)
             {
                 Read(state);
-                Thread.Sleep(100);
-                if (((state.workSocket.Poll(1, SelectMode.SelectRead) && (state.workSocket.Available == 0)) || !state.workSocket.Connected))
-                {
-                    state.workSocket.Close();
-                    break;
-                }
+                Thread.Sleep(1);
+            }
+            if (timerTickFlag == true)
+            {
+                receiveDisplay.AppendText("Receive Timeout : 5 Second !"+Environment.NewLine);
             }
         }
         public void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             reConnect();
+        }
+        private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            timer2.Stop();
+            //timer2.Enabled = false;
+            timerTickFlag = false;
+            workerBusy.Set();
         }
         public void reConnect()
         {
@@ -565,8 +555,11 @@ namespace GUIServerCS
             description = String.Empty;
             DescBox.Clear();
             ExpectBox.Clear();
+            //timer2.Start();
             for (i = 0; i < Mod[parentIndex].tc[childIndex].seq.Count; i++)
             {
+                //workerBusy.Reset();
+                backgroundWorker2.RunWorkerAsync();
                 DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
                 ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
                 if (stopSendFlag == true) break;
@@ -671,7 +664,6 @@ namespace GUIServerCS
                     default: break;
                 }
                 workerBusy.WaitOne();
-                //MessageBox.Show("after "+expectedResult);
                 expectedResult = String.Empty;
             }
             passTest += tempPass / Mod[parentIndex].tc[childIndex].seq.Count;
@@ -679,7 +671,6 @@ namespace GUIServerCS
         }
         public void SendButton_Click(object sender, EventArgs e)
         {
-            timer2.Enabled = true;
             timer2.Start();
             SendButtonCheck = true;
             receiveDisplay.Focus();

@@ -163,6 +163,7 @@
             // 
             this.backgroundWorker2.WorkerSupportsCancellation = true;
             this.backgroundWorker2.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker2_DoWork);
+            this.backgroundWorker2.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker2_RunWorkerCompleted);
             // 
             // statusStrip1
             // 
@@ -221,7 +222,7 @@
             // 
             // timer2
             // 
-            this.timer2.Interval = 2500;
+            this.timer2.Interval = 5000;
             this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
             // 
             // ServerForm
