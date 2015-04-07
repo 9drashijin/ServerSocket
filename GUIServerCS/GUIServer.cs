@@ -59,8 +59,8 @@ namespace GUIServerCS
         String content = String.Empty; // Received string data
         bool SendButtonCheck = false, stopSendFlag = false;
         int counter = 0, tempCounter = 0, GparentIndex, GchildIndex, passTest = 0, tempPass = 0;
-        int pBarMax = 0;
-        StreamWriter report = new StreamWriter("ResultLog.txt", true); //Text file at current directory
+        int pBarMax = 0, tempBarMax = 0, totalTestCount = 0;
+        StreamWriter report = new StreamWriter(DateTime.Now.ToString("yyyy_MM_dd") + "_ResultLog.txt", true); //Text file at current directory
 
         public ServerForm()
         {
@@ -222,29 +222,7 @@ namespace GUIServerCS
                 int bytesRead = handler.EndReceive(asyn);
                 if (bytesRead > 0)
                 {
-                    
-                    //ProgressBar function
-                    toolStripProgressBar1.Maximum = pBarMax;
-                    toolStripProgressBar1.Increment(1);
-
-                    // To find the progress bar percentage
-                    int percent = (int)(((double)toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum) * 100);
-                    percentageDisplay.Text = percent.ToString() + "%";
-
-                    // To smoothen the updating of the progress bar
-                    int value = toolStripProgressBar1.Value;
-                    if (value == toolStripProgressBar1.Maximum)//To correctly update progress bar
-                    {
-                        toolStripProgressBar1.Maximum = value + 1;
-                        toolStripProgressBar1.Value = value + 1;
-                        toolStripProgressBar1.Maximum = value;
-                    }
-                    else
-                    {
-                        toolStripProgressBar1.Value = value + 1;
-                    }
-                    toolStripProgressBar1.Value = value;
-
+                    ProgressBar_Update();
                     currentTest.Text = "Current Test : " + (counter).ToString();
                     // get the data and transfer to string builder
                     state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
@@ -336,6 +314,8 @@ namespace GUIServerCS
                 counter = 0;
                 tempCounter = 0;
                 pBarMax = 0;
+                tempBarMax = 0;
+                totalTestCount = 0;
                 Thread.Sleep(100);
 
                 if (SendButtonCheck == true)
@@ -346,7 +326,9 @@ namespace GUIServerCS
                         report.WriteLine("Test Result " + i + " - " + DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt") + "\r\n--------------------------------------");
                         toolStripProgressBar1.Value = 0;
                         CheckTotalTick(TestMenuTree.Nodes);
-                        totalTest.Text = "Total Test : " + tempCounter.ToString();
+                        pBarMax = tempBarMax;
+                        totalTestCount = tempCounter;
+                        totalTest.Text = "Total Test : " + totalTestCount.ToString();
                         CheckTicked(TestMenuTree.Nodes);
                         report.WriteLine();
                         receiveDisplay.AppendText("\r\n-------------------------\r\nOVERALL UNIT TEST SUMMARY\r\n-------------------------\r\nTESTED : "
@@ -367,9 +349,11 @@ namespace GUIServerCS
         }
         public void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
         {
+            tempCounter = 0;
+            CheckTotalTick(TestMenuTree.Nodes);
             workerBusy.Reset();
-            watch.Start();
-            while (watch.ElapsedMilliseconds < 5000 && watch.IsRunning)
+            watch.Restart();
+            while (watch.ElapsedMilliseconds < 5000 && watch.IsRunning) // 5 second timeout
             {
                 Read(state);
                 Thread.Sleep(1);
@@ -378,7 +362,6 @@ namespace GUIServerCS
             {
                 receiveDisplay.AppendText(currentTestCasePadded + "Receive Timeout : 5 Second !" + Environment.NewLine);
             }
-            watch.Reset();
             if (((state.workSocket.Poll(1, SelectMode.SelectRead) && (state.workSocket.Available == 0)) || !state.workSocket.Connected))
             {
                 state.workSocket.Close();
@@ -430,7 +413,7 @@ namespace GUIServerCS
         public void TestMenuTree_CheckedChanged(object sender, TreeViewEventArgs e)
         {
             TestMenuTree.BeginUpdate();
-
+            receiveDisplay.Focus();
             TreeNode node = e.Node;
             foreach (TreeNode childNode in e.Node.Nodes)
             {
@@ -439,6 +422,30 @@ namespace GUIServerCS
             TestMenuTree.SelectedNode = node;
 
             TestMenuTree.EndUpdate();
+        }
+        public void ProgressBar_Update() 
+        {
+            //ProgressBar function
+            toolStripProgressBar1.Maximum = pBarMax;
+            toolStripProgressBar1.Increment(1);
+
+            // To find the progress bar percentage
+            int percent = (int)(((double)toolStripProgressBar1.Value / (double)toolStripProgressBar1.Maximum) * 100);
+            percentageDisplay.Text = percent.ToString() + "%";
+
+            // To smoothen the updating of the progress bar
+            int value = toolStripProgressBar1.Value;
+            if (value == toolStripProgressBar1.Maximum)//To correctly update progress bar
+            {
+                toolStripProgressBar1.Maximum = value + 1;
+                toolStripProgressBar1.Value = value + 1;
+                toolStripProgressBar1.Maximum = value;
+            }
+            else
+            {
+                toolStripProgressBar1.Value = value + 1;
+            }
+            toolStripProgressBar1.Value = value;
         }
         public void UncheckAll(TreeNodeCollection theNodes)
         {
@@ -533,7 +540,7 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            pBarMax += Mod[child.Parent.Index].tc[child.Index].seq.Count;
+                            tempBarMax += Mod[child.Parent.Index].tc[child.Index].seq.Count;
                             tempCounter++;
                         }
                     }
@@ -556,6 +563,7 @@ namespace GUIServerCS
             ExpectBox.Clear();
             for (i = 0; i < Mod[parentIndex].tc[childIndex].seq.Count; i++)
             {
+                while (backgroundWorker2.IsBusy == true) ;
                 backgroundWorker2.RunWorkerAsync();
                 DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
                 ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
@@ -581,7 +589,8 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            Thread.Sleep(100);
+                            //Thread.Sleep(100);
+                            Thread.Sleep(1);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -601,7 +610,8 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            Thread.Sleep(250);
+                            //Thread.Sleep(250);
+                            Thread.Sleep(1);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -611,7 +621,8 @@ namespace GUIServerCS
                         Send(state.workSocket, "3005");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
-                        Thread.Sleep(50);
+                        //Thread.Sleep(50);
+                        Thread.Sleep(1);
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
@@ -644,7 +655,7 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            Thread.Sleep(100);
+                            Thread.Sleep(1);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
