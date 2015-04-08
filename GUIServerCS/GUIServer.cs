@@ -60,7 +60,7 @@ namespace GUIServerCS
         bool SendButtonCheck = false, stopSendFlag = false;
         int counter = 0, tempCounter = 0, GparentIndex, GchildIndex, passTest = 0, tempPass = 0;
         int pBarMax = 0, tempBarMax = 0, totalTestCount = 0;
-        StreamWriter report = new StreamWriter(DateTime.Now.ToString("yyyy_MM_dd") + "_ResultLog.txt", true); //Text file at current directory
+        StreamWriter report = new StreamWriter("Result_Log/"+DateTime.Now.ToString("yyyy_MM_dd") + "_ResultLog.txt", true); //Text file at current directory
 
         public ServerForm()
         {
@@ -86,7 +86,7 @@ namespace GUIServerCS
             int tempI = 0, tempJ = 0, tempK = 0, tempL = 0;
 
             // Get the xml Directory
-            var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.xml");
+            var files = Directory.GetFiles(Directory.GetCurrentDirectory(), "TestCaseXML/*.xml");
 
             // Must call BeginUpdate when updating the tree
             TestMenuTree.BeginUpdate();
@@ -227,6 +227,7 @@ namespace GUIServerCS
                     // get the data and transfer to string builder
                     state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                     content = state.str.ToString();
+                    //MessageBox.Show(content);
 
                     if (expectedResult == "PROMPT_USER_INPUT")
                     {
@@ -236,15 +237,15 @@ namespace GUIServerCS
                             "Please confirm if the test pass." + Environment.NewLine + description, "User Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
                         if (result == DialogResult.Yes)
                         {
-                            content += "PASS";
+                            content = "PASS" + content;
                         }
                         else if (result == DialogResult.No)
                         {
-                            content += "FAIL";
+                            content = "FAIL" + content;
                         }
                         else
                         {
-                            content += "ABORTED";
+                            content = "ABORTED" + content;
                             stopSendFlag = true;
                             UncheckAll(TestMenuTree.Nodes);
                             CheckTicked(TestMenuTree.Nodes);
@@ -265,7 +266,7 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            content += " PASS";
+                            content = "PASS " + content;
                         }
                         receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
                         report.WriteLine(currentTestCasePadded + content);
@@ -279,7 +280,7 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            content += " FAIL";
+                            content = " FAIL" + content;
                         }
                         receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
                         report.WriteLine(currentTestCasePadded + content);
@@ -413,7 +414,6 @@ namespace GUIServerCS
         public void TestMenuTree_CheckedChanged(object sender, TreeViewEventArgs e)
         {
             TestMenuTree.BeginUpdate();
-            receiveDisplay.Focus();
             TreeNode node = e.Node;
             foreach (TreeNode childNode in e.Node.Nodes)
             {
@@ -511,11 +511,15 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            int i = 0;
-                            for (i = 0; i < Mod[child.Parent.Index].tc[child.Index].seq.Count; i++)
+                            if (child.Level == 0 || child.Level == 1 || child.Level == 2) { ; }
+                            else
                             {
-                                DescBox.AppendText(Mod[child.Parent.Index].tc[child.Index].seq[i].Description + Environment.NewLine);
-                                ExpectBox.AppendText(Mod[child.Parent.Index].tc[child.Index].seq[i].Expect + Environment.NewLine);
+                                int i = 0;
+                                for (i = 0; i < Mod[child.Parent.Index].tc[child.Index].seq.Count; i++)
+                                {
+                                    DescBox.AppendText(Mod[child.Parent.Index].tc[child.Index].seq[i].Description + Environment.NewLine);
+                                    ExpectBox.AppendText(Mod[child.Parent.Index].tc[child.Index].seq[i].Expect + Environment.NewLine);
+                                }
                             }
                         }
                     }
@@ -565,10 +569,13 @@ namespace GUIServerCS
             {
                 while (backgroundWorker2.IsBusy == true) ;
                 backgroundWorker2.RunWorkerAsync();
+
                 DescBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine);
                 ExpectBox.AppendText(Mod[parentIndex].tc[childIndex].seq[i].Expect + Environment.NewLine);
+
                 if (stopSendFlag == true) break;
                 expectedResult = String.Empty;
+
                 inputData = Mod[parentIndex].tc[childIndex].seq[i].FuncID + Mod[parentIndex].tc[childIndex].seq[i].Param;
                 expectedResult = Mod[parentIndex].tc[childIndex].seq[i].Expect;
                 description += Mod[parentIndex].tc[childIndex].seq[i].Description + Environment.NewLine;
@@ -577,6 +584,7 @@ namespace GUIServerCS
                                         + Mod[parentIndex].tc[childIndex].TestCases + "|Seq - " + (i + 1).ToString("D4") + " - ";
                 failedTest = Mod[parentIndex].tc[childIndex].Module + " - " + Mod[parentIndex].tc[childIndex].TestCases
                              + " Failed , Sequence : " + (i + 1).ToString("D4");
+
                 switch (Mod[parentIndex].tc[childIndex].Module.ToLower())
                 {
                     case "annunciator":
@@ -586,11 +594,6 @@ namespace GUIServerCS
                         if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000" || Mod[parentIndex].tc[childIndex].seq[i].FuncID == "0001")
                         {
                             Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
-                        }
-                        else
-                        {
-                            //Thread.Sleep(100);
-                            Thread.Sleep(1);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -608,10 +611,12 @@ namespace GUIServerCS
                         {
                             Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
                         }
+                        else if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "0001" || 
+                                 Mod[parentIndex].tc[childIndex].seq[i].FuncID == "0002" ||
+                                 Mod[parentIndex].tc[childIndex].seq[i].FuncID == "0005") { Thread.Sleep(250); }
                         else
                         {
-                            //Thread.Sleep(250);
-                            Thread.Sleep(1);
+                            Thread.Sleep(50);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -621,8 +626,6 @@ namespace GUIServerCS
                         Send(state.workSocket, "3005");
                         Thread.Sleep(100);
                         Send(state.workSocket, inputData);
-                        //Thread.Sleep(50);
-                        Thread.Sleep(1);
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
                         break;
@@ -652,10 +655,6 @@ namespace GUIServerCS
                         if (Mod[parentIndex].tc[childIndex].seq[i].FuncID == "8000")
                         {
                             Thread.Sleep((Int32.Parse(Mod[parentIndex].tc[childIndex].seq[i].Param)) + 100);
-                        }
-                        else
-                        {
-                            Thread.Sleep(1);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -687,7 +686,7 @@ namespace GUIServerCS
                         }
                         else
                         {
-                            Thread.Sleep(100);
+                            Thread.Sleep(300);
                         }
                         Send(state.workSocket, "exit");
                         Thread.Sleep(100);
@@ -724,6 +723,7 @@ namespace GUIServerCS
         }
         public void ClearButton_Click(object sender, EventArgs e)
         {
+            //To clear all the test cases and text
             UncheckAll(TestMenuTree.Nodes);
             receiveDisplay.Clear();
             toolStripProgressBar1.Value = 0;

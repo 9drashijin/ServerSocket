@@ -61,9 +61,9 @@
             // 
             // TestMenuTree
             // 
+            resources.ApplyResources(this.TestMenuTree, "TestMenuTree");
             this.TestMenuTree.BackColor = System.Drawing.SystemColors.Control;
             this.TestMenuTree.CheckBoxes = true;
-            resources.ApplyResources(this.TestMenuTree, "TestMenuTree");
             this.TestMenuTree.Name = "TestMenuTree";
             this.TestMenuTree.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.TestMenuTree_CheckedChanged);
             this.TestMenuTree.NodeMouseHover += new System.Windows.Forms.TreeNodeMouseHoverEventHandler(this.TestMenuTree_NodeMouseHover);
@@ -71,8 +71,8 @@
             // 
             // ServerInfo
             // 
-            this.ServerInfo.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this.ServerInfo, "ServerInfo");
+            this.ServerInfo.BackColor = System.Drawing.SystemColors.Control;
             this.ServerInfo.Name = "ServerInfo";
             this.ServerInfo.ReadOnly = true;
             // 
@@ -83,8 +83,8 @@
             // 
             // ClientInfo
             // 
-            this.ClientInfo.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this.ClientInfo, "ClientInfo");
+            this.ClientInfo.BackColor = System.Drawing.SystemColors.Control;
             this.ClientInfo.Name = "ClientInfo";
             this.ClientInfo.ReadOnly = true;
             // 
@@ -112,8 +112,8 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BackColor = System.Drawing.SystemColors.Menu;
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
+            this.pictureBox1.BackColor = System.Drawing.SystemColors.Menu;
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
@@ -166,22 +166,22 @@
             // 
             // statusStrip1
             // 
+            resources.ApplyResources(this.statusStrip1, "statusStrip1");
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripProgressBar1,
             this.percentageDisplay,
             this.totalTest,
             this.currentTest,
             this.currentModule});
-            resources.ApplyResources(this.statusStrip1, "statusStrip1");
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.SizingGrip = false;
             this.statusStrip1.Stretch = false;
             // 
             // toolStripProgressBar1
             // 
+            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
             this.toolStripProgressBar1.Margin = new System.Windows.Forms.Padding(12, 3, 1, 3);
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            resources.ApplyResources(this.toolStripProgressBar1, "toolStripProgressBar1");
             this.toolStripProgressBar1.Step = 1;
             this.toolStripProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             // 
@@ -205,9 +205,9 @@
             // 
             // currentModule
             // 
+            resources.ApplyResources(this.currentModule, "currentModule");
             this.currentModule.Margin = new System.Windows.Forms.Padding(30, 3, 0, 2);
             this.currentModule.Name = "currentModule";
-            resources.ApplyResources(this.currentModule, "currentModule");
             // 
             // timer1
             // 
@@ -224,6 +224,7 @@
             this.AcceptButton = this.SendButton;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.Controls.Add(this.timerDisplay);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.Expect);
