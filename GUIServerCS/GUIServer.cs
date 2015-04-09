@@ -372,7 +372,7 @@ namespace GUIServerCS
         {
             reConnect();
         }
-        private void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        public void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             watch.Reset();
             workerBusy.Set();
