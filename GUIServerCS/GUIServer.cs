@@ -42,7 +42,7 @@ namespace GUIServerCS
         {
             public TestCase[] tc = new TestCase[128];
         }
-
+        
         //Global Variable
         Socket serverSocket;
         Socket ClientHandler;
@@ -60,6 +60,7 @@ namespace GUIServerCS
         bool SendButtonCheck = false, stopSendFlag = false;
         int counter = 0, tempCounter = 0, GparentIndex, GchildIndex, passTest = 0, tempPass = 0;
         int pBarMax = 0, tempBarMax = 0, totalTestCount = 0;
+        const int MAXTIMEOUT = 10000;
         StreamWriter report = new StreamWriter("Result_Log/"+DateTime.Now.ToString("yyyy_MM_dd") + "_ResultLog.txt", true); //Text file at current directory
 
         public ServerForm()
@@ -232,6 +233,7 @@ namespace GUIServerCS
                     if (expectedResult == "PROMPT_USER_INPUT")
                     {
                         workerBusy.Reset();
+                        
                         content = String.Empty;
                         DialogResult result = MessageBox.Show(currentTestCases + Environment.NewLine +
                             "Please confirm if the test pass." + Environment.NewLine + description, "User Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
@@ -250,6 +252,7 @@ namespace GUIServerCS
                             UncheckAll(TestMenuTree.Nodes);
                             CheckTicked(TestMenuTree.Nodes);
                         }
+                        //watch.Start();
                         receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
                         report.WriteLine(currentTestCasePadded + content);
                     }
@@ -354,12 +357,12 @@ namespace GUIServerCS
             CheckTotalTick(TestMenuTree.Nodes);
             workerBusy.Reset();
             watch.Restart();
-            while (watch.ElapsedMilliseconds < 5000 && watch.IsRunning) // 5 second timeout
+            while (watch.ElapsedMilliseconds < MAXTIMEOUT && watch.IsRunning) // 5 second timeout
             {
                 Read(state);
                 Thread.Sleep(1);
             }
-            if (watch.ElapsedMilliseconds >= 5000)
+            if (watch.ElapsedMilliseconds >= MAXTIMEOUT)
             {
                 receiveDisplay.AppendText(currentTestCasePadded + "Receive Timeout : 5 Second !" + Environment.NewLine);
             }
