@@ -43,26 +43,29 @@ namespace GUIServerCS
             public TestCase[] tc = new TestCase[128];
         }
         
-        //Global Variable
-        Socket serverSocket;
-        Socket ClientHandler;
+        //Global Variables
+        Socket serverSocket, ClientHandler;
         IPEndPoint clientIP;
         StateObject state = new StateObject();
         ManualResetEvent ConnectionDone = new ManualResetEvent(false);
         ManualResetEvent workerBusy = new System.Threading.ManualResetEvent(false);
-        Stopwatch watch = new Stopwatch();
-        String childParentTxt = String.Empty;
-        String expectedResult = String.Empty, description = String.Empty;
-        String failedTest = String.Empty;
-        String currentTestCases = String.Empty, currentTestCasePadded = String.Empty;
         Module[] Mod = new Module[11]; // total module size
+        
+        String childParentTxt = String.Empty, expectedResult = String.Empty, description = String.Empty;
+        String currentTestCases = String.Empty, currentTestCasePadded = String.Empty, failedTest = String.Empty;
         String content = String.Empty; // Received string data
-        bool SendButtonCheck = false, stopSendFlag = false;
+
         int counter = 0, tempCounter = 0, GparentIndex, GchildIndex, passTest = 0, tempPass = 0;
         int pBarMax = 0, tempBarMax = 0, totalTestCount = 0;
+        bool SendButtonCheck = false, stopSendFlag = false;
+
         const int MAXTIMEOUT = 10000;
+        Stopwatch watch = new Stopwatch();
         StreamWriter report = new StreamWriter("Result_Log/"+DateTime.Now.ToString("yyyy_MM_dd") + "_ResultLog.txt", true); //Text file at current directory
 
+        /*
+         * Main Form function for the GUI Server Socket
+         */
         public ServerForm()
         {
             try
@@ -79,6 +82,9 @@ namespace GUIServerCS
             catch (Exception) { throw; }
             finally { Application.Exit(); }
         }
+        /*
+         * Function to Build the Tree view from the xml file
+         */
         public void buildTreeView()
         {
             TestCase[] TC = new TestCase[128];
@@ -101,12 +107,11 @@ namespace GUIServerCS
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(file); // load the file to the form
 
-                //Cases to avoid multiple creation of TestMenu for multiple file
+                // Cases to avoid multiple creation of TestMenu for multiple file
                 if (!TestMenuTree.Nodes.ContainsKey("TestMenu"))
                 {
                     TestMenuTree.Nodes.Add(new TreeNode("TestMenu") { Name = "TestMenu" });
                 }
-
                 // Loop to build the tree from the xml file
                 foreach (XmlNode xNode in xmlDoc.SelectNodes("TestMenu"))
                 {
@@ -126,13 +131,11 @@ namespace GUIServerCS
                         k = tempK;
                         l = tempL;
                     }
-
                     XmlNodeList testCaseList = xmlDoc.GetElementsByTagName("TestCase");
                     foreach (XmlNode tcNode in testCaseList)
                     {
                         TestMenuTree.Nodes[0].Nodes[0].Nodes[i].Nodes.Add(new TreeNode(tcNode.Attributes["tc"].InnerText));
                     }
-
                     foreach (XmlNode xNode1 in xNode.SelectNodes("TestCase"))
                     {
                         Mod[j].tc[k] = new TestCase();
@@ -166,6 +169,9 @@ namespace GUIServerCS
             }
             TestMenuTree.EndUpdate();
         }
+        /*
+         * Display the host network info, such as IP address and Port number
+         */
         public void DisplayServerInfo()
         {
             IPAddress IpAddressv6 = Dns.GetHostAddresses(Dns.GetHostName())[0];
@@ -177,6 +183,9 @@ namespace GUIServerCS
             ServerInfo.AppendText("IPv6 Address : " + IpAddressv6.ToString() + Environment.NewLine);
             ServerInfo.AppendText("Server Port  : 8888" + Environment.NewLine);
         }
+        /*
+         * Display the client network info with IP address and port when connected to the server
+         */
         public void DisplayClientInfo()
         {
             //Get the client information.
@@ -184,6 +193,9 @@ namespace GUIServerCS
             ClientInfo.AppendText("IPv4 Address : " + clientIP.Address + Environment.NewLine);
             ClientInfo.AppendText("Client Port  : " + clientIP.Port + Environment.NewLine);
         }
+        /*
+         * Wait for connection from the client by listening and accpect incoming connection 
+         */
         public void ServerListen()
         {
             IPEndPoint localIP = new IPEndPoint(IPAddress.Any, 8888); // Server Port : 8888
@@ -198,10 +210,12 @@ namespace GUIServerCS
 
                 serverSocket.BeginAccept(new AsyncCallback(AcceptCallBack), serverSocket);
                 ConnectionDone.WaitOne();
-
             }
             catch (Exception) { }
         }
+        /*
+         * To accept the client when connected to the server
+         */
         public void AcceptCallBack(IAsyncResult asyn)
         {
             ConnectionDone.Set();
@@ -211,10 +225,16 @@ namespace GUIServerCS
             receiveDisplay.AppendText("A Client has joined the server." + Environment.NewLine);
             state.workSocket = ClientHandler;
         }
+        /*
+         * Read the data from the client
+         */
         public void Read(StateObject state)
         {
             ClientHandler.BeginReceive(state.buffer, 0, 1024, 0, new AsyncCallback(ReadCallBack), state);
         }
+        /*
+         * Read and compare the received data content for the test cases
+         */
         public void ReadCallBack(IAsyncResult asyn)
         {
             StateObject state = (StateObject)asyn.AsyncState;
@@ -228,12 +248,10 @@ namespace GUIServerCS
                     // get the data and transfer to string builder
                     state.str.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
                     content = state.str.ToString();
-                    //MessageBox.Show(content);
 
                     if (expectedResult == "PROMPT_USER_INPUT")
                     {
                         workerBusy.Reset();
-                        
                         content = String.Empty;
                         DialogResult result = MessageBox.Show(currentTestCases + Environment.NewLine +
                             "Please confirm if the test pass." + Environment.NewLine + description, "User Confirmation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
@@ -252,7 +270,6 @@ namespace GUIServerCS
                             UncheckAll(TestMenuTree.Nodes);
                             CheckTicked(TestMenuTree.Nodes);
                         }
-                        //watch.Start();
                         receiveDisplay.AppendText(currentTestCasePadded + content + Environment.NewLine);
                         report.WriteLine(currentTestCasePadded + content);
                     }
@@ -296,15 +313,25 @@ namespace GUIServerCS
                     state.str.Clear();
                 }
         }
+        /*
+         * Send the data to the client
+         */
         public void Send(Socket handler, String data)
         {
             byte[] byteData = Encoding.ASCII.GetBytes(data);
             handler.BeginSend(byteData, 0, byteData.Length, 0, new AsyncCallback(SendCallBack), handler);
         }
+        /*
+         * Do nothing, doesn't need to send back data to the client (terminal) 
+         */
         public void SendCallBack(IAsyncResult asyn)
         {
             //do nothing
         }
+        /*
+         * main backgroundWorker for doing all the job behind the Form, 
+         * initialize socket and send data
+         */
         public void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
@@ -351,6 +378,9 @@ namespace GUIServerCS
             }
             receiveDisplay.AppendText(clientIP.Address + ":" + clientIP.Port + " has disconnected from the server!" + Environment.NewLine);
         }
+        /*
+         *  backgroundWorker for receiving data and timeout checking
+         */
         public void backgroundWorker2_DoWork(object sender, DoWorkEventArgs e)
         {
             tempCounter = 0;
@@ -364,22 +394,31 @@ namespace GUIServerCS
             }
             if (watch.ElapsedMilliseconds >= MAXTIMEOUT)
             {
-                receiveDisplay.AppendText(currentTestCasePadded + "Receive Timeout : 5 Second !" + Environment.NewLine);
+                receiveDisplay.AppendText(currentTestCasePadded + "Receive Timeout : 10 Seconds !" + Environment.NewLine);
             }
             if (((state.workSocket.Poll(1, SelectMode.SelectRead) && (state.workSocket.Available == 0)) || !state.workSocket.Connected))
             {
                 state.workSocket.Close();
             }
         }
+        /*
+         *  backgroundWorker1 complete then will try to reconnect by re-run the worker
+         */
         public void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             reConnect();
         }
+        /*
+         *  backgroundWorker2, signal for continue sending and reset stopwatch
+         */
         public void backgroundWorker2_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             watch.Reset();
             workerBusy.Set();
         }
+        /*
+         *  Reconnect to the server, close and terminate all the socket, backgroundworker and clear the display
+         */
         public void reConnect()
         {
             state.workSocket.Close();
@@ -391,6 +430,9 @@ namespace GUIServerCS
             backgroundWorker2.CancelAsync();
             backgroundWorker1.RunWorkerAsync();
         }
+        /*
+         *  Event handler for mouse hovering over the treeview and display the info of the test cases
+         */
         public void TestMenuTree_NodeMouseHover(object sender, TreeNodeMouseHoverEventArgs e)
         {
             DescBox.Clear();
@@ -408,12 +450,18 @@ namespace GUIServerCS
                 }
             }
         }
+        /*
+         *  Event handler to display description and expected result when selecting a node
+         */
         public void TestMenuTree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             DescBox.Clear();
             ExpectBox.Clear();
             CheckSelect(TestMenuTree.Nodes);
         }
+        /*
+         *  Event handler for autocheck the checkbox
+         */
         public void TestMenuTree_CheckedChanged(object sender, TreeViewEventArgs e)
         {
             TestMenuTree.BeginUpdate();
@@ -426,6 +474,9 @@ namespace GUIServerCS
 
             TestMenuTree.EndUpdate();
         }
+        /*
+         *  To update the progress bar by calculating the percentage of the progress
+         */
         public void ProgressBar_Update() 
         {
             //ProgressBar function
@@ -450,6 +501,9 @@ namespace GUIServerCS
             }
             toolStripProgressBar1.Value = value;
         }
+        /*
+         *  To uncheck all the node in the treeview
+         */
         public void UncheckAll(TreeNodeCollection theNodes)
         {
             if (theNodes != null)
@@ -467,6 +521,9 @@ namespace GUIServerCS
                 }
             }
         }
+        /*
+         *  To check which node in the treeview is ticked for sending.
+         */
         public void CheckTicked(TreeNodeCollection theNodes)
         {
             if (theNodes != null)
@@ -500,6 +557,9 @@ namespace GUIServerCS
                 }
             }
         }
+        /*
+         *  Function to display description and expected result when selecting a node
+         */
         public void CheckSelect(TreeNodeCollection theNodes)
         {
             if (theNodes != null)
@@ -533,6 +593,9 @@ namespace GUIServerCS
                 }
             }
         }
+        /*
+         *  Function to count the total checked nodes in the treeview
+         */
         public void CheckTotalTick(TreeNodeCollection theNodes)
         {
             if (theNodes != null)
@@ -558,6 +621,9 @@ namespace GUIServerCS
                 }
             }
         }
+        /*
+         *  Fucntion to Send data of each test cases and its sequences
+         */
         public void checkIndex(int childIndex, int parentIndex)
         {
             stopSendFlag = false;
@@ -719,11 +785,17 @@ namespace GUIServerCS
             passTest += tempPass / Mod[parentIndex].tc[childIndex].seq.Count;
             tempPass = 0;
         }
+        /*
+         *  Event handler to start sending after click
+         */
         public void SendButton_Click(object sender, EventArgs e)
         {
             SendButtonCheck = true;
             receiveDisplay.Focus();
         }
+        /*
+         *  Event handler to stop sending, clear the checked node and clear the display after click
+         */
         public void ClearButton_Click(object sender, EventArgs e)
         {
             //To clear all the test cases and text
@@ -737,13 +809,19 @@ namespace GUIServerCS
             DescBox.Text = String.Empty;
             ExpectBox.Text = String.Empty;
         }
+        /*
+         *  To get the server timer and display it
+         */
         public void timer1_Tick(object sender, EventArgs e)
         {
             timerDisplay.Text = "Server Time : " + DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss tt");
         }
+        /*
+         *  Event Handler after closing the form by clean up all the background process
+         */
         public void ServerForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            DialogResult closing = MessageBox.Show("Do you want to Restart the Program?", "Program Terminating...", MessageBoxButtons.YesNo, MessageBoxIcon.Stop);
+            DialogResult closing = MessageBox.Show("Do you want to restart the program?", "Program Terminating...", MessageBoxButtons.YesNo, MessageBoxIcon.Stop);
             if (closing == DialogResult.Yes) Application.Restart();
             report.Close();
             backgroundWorker1.CancelAsync();

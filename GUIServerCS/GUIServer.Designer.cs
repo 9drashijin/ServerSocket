@@ -16,6 +16,10 @@
             if (disposing && (components != null))
             {
                 components.Dispose();
+                serverSocket.Dispose();
+                workerBusy.Dispose();
+                report.Dispose();
+                ConnectionDone.Dispose();
             }
             base.Dispose(disposing);
         }
